@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "SWE Assessment Task 2.sln"
+    "dotnet.defaultSolution": "SWE Assessment Task 2.slnx"
 }
