@@ -5,10 +5,11 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 
+
 public static class Data {
 
-    static Dictionary<int, List<int>> rooms = new Dictionary<int, List<int>> {
-        {1, new List<int>  { 3,  2,  6  } },
+    public static Dictionary<int, List<int>> rooms = new Dictionary<int, List<int>> {
+        {1, new List<int>  { 2,  3,  6  } },
         {2, new List<int>  { 1,  4,  5  } },
         {3, new List<int>  { 1,  7,  19 } },
         {4, new List<int>  { 2,  7,  8  } },
@@ -30,7 +31,7 @@ public static class Data {
         {20, new List<int> { 6,  18, 19 } },  // extremely unoptimised fix ts later
     };
 
-    static Dictionary<int, ArrayList> things = new Dictionary<int, ArrayList> {
+    public static Dictionary<int, ArrayList> things = new Dictionary<int, ArrayList> {
 
         // Enemies        |  Name             |  Minimum Floor    |  Spawn Weight     |  Damage           |  Flavour Text
         {0, new ArrayList {"The Boing",        1,                  1,                  1,                  "" } },
@@ -41,42 +42,55 @@ public static class Data {
         {5, new ArrayList {} },
 
         // Bosses         |  Name             |  Minimum Floor    |  Spawn Weight     |  Flavour Text
-        {0, new ArrayList {"The Wumpus",       1,                  1,                  "I smell a wumpus!" } },
-        {1, new ArrayList {"The Bunga Booga",  3,                  2,                  "I smell hot dogs!" } },
-        {2, new ArrayList {""   } },
-        {3, new ArrayList {} },
-        {4, new ArrayList {} },
-        {5, new ArrayList {} },
+        {6, new ArrayList {"The Wumpus",       1,                  1,                  "I smell a wumpus!" } },
+        {7, new ArrayList {"The Bunga Booga",  3,                  2,                  "I smell hot dogs!" } },
+        {8, new ArrayList {""   } },
+        {9, new ArrayList {} },
+        {10, new ArrayList {} },
+        {11, new ArrayList {} },
 
         // Bosses         |  Name             |  Minimum Floor    |  Spawn Weight     |  Flavour Text
-        {0, new ArrayList {"The Wumpus",       1,                  1,                  "I smell a wumpus!" } },
-        {1, new ArrayList {} },
-        {2, new ArrayList {""   } },
-        {3, new ArrayList {} },
-        {4, new ArrayList {} },
-        {5, new ArrayList {} },
+        {12, new ArrayList {"The Wumpus",       1,                  1,                  "I smell a wumpus!" } },
+        {13, new ArrayList {} },
+        {14, new ArrayList {""   } },
+        {15, new ArrayList {} },
+        {16, new ArrayList {} },
+        {17, new ArrayList {} },
     };
 
-    // static int currentRoom = 1;
-    // static int floor = 1;
+    public static int currentRoom = 1;
+    public static int floor = 1;
+
 }
 
 
-public class GameData : MonoBehaviour {
+public class GameManager : MonoBehaviour {
 
     public GameObject notebookUI;
     public GameObject uiArea;
+
+    public TextMeshProUGUI[] arrowText;
+    public TextMeshProUGUI roomText;
 
     public bool toggleNotes;
 
 
     void Update() {
-        if (toggleNotes)
+        if (toggleNotes)  // Toggle for the visibility of the Notebook
             notebookUI.SetActive(true);
         if (!toggleNotes)
             notebookUI.SetActive(false);
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape))  // Keybind to hide the Notebook
             toggleNotes = !toggleNotes;
+
+        for (int i = 0; i < 3; i++) {  // Display for arrows to go to different rooms
+            arrowText[i].text = $"Travel to room {Data.rooms[Data.currentRoom][i]}";
+        }  // The current room/floor text
+        roomText.text = $"You are in Room {Data.currentRoom}, Floor {Data.floor}";
+    }
+
+    public void MovePlayer(int arrowNum) {  // code for moving the player (will be more later trust me)
+        Data.currentRoom = Data.rooms[Data.currentRoom][arrowNum];
     }
 }
