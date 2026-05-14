@@ -8,11 +8,15 @@
 
 **Friday 8/5/26** - Today, I found a free font pack claled *BoldPixels* that I will be using for my project, as it will compliment the pixel-art aesthetic that I will be going for. I also started both my documentation and some pixel art for the player sprite. For the pixel art, I wanted to try a new approach for character design, so I tried to design the character from a diagonal angle, which proved to be a little difficult.
 
+**Weekend 9/5/26 - 10/5/26** - I spent a bit of time working on some prototype pixel art for the enemies. (Add an image later)
+
 ## Week 4 (A Week) - Focus: Identification of Classes, Objects, System Diagramming
 
-**Monday 11/5/26**
-**Wednesday 13/5/26**
-**Thursday 14/5/26**
+**Monday 11/5/26** - Because I forgot to commit my changes, I wasn't able to work on the programming aspect of my project, so instead I mostly focused on catching up on the documentation since I was a little behind. I managed to finish most of the first section - Design of Characters and Environment.
+
+**Wednesday 13/5/26** - *(No class due to Athletics Carnival)*
+
+**Thursday 14/5/26** - Today
 **Friday 15/5/26**
 
 ## Week 5 (B Week) - Focus: Programming, Asset Creation/Identification and Journaling
