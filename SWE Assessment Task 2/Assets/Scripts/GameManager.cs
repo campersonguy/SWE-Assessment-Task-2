@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections;
+using System;
 using System.Collections.Generic;
 using TMPro;
 
@@ -61,36 +62,127 @@ public static class Data {
     public static int currentRoom = 1;
     public static int floor = 1;
 
+    public static List<int> enemyLocations = new List<int> { 0, 0, 0, 0, 0, 0 };
+
 }
 
 
 public class GameManager : MonoBehaviour {
 
     public GameObject notebookUI;
+    public GameObject arrowUI;
     public GameObject uiArea;
+
+    public GameObject blackBackground;
 
     public TextMeshProUGUI[] arrowText;
     public TextMeshProUGUI roomText;
+    public TextMeshProUGUI transitionText;
 
     public bool toggleNotes;
 
+    private System.Random random = new System.Random();
+
+
+    void Start() {
+        SetUI();
+
+        for (int i = 0; i < 6; i++) {
+            int randomNum = random.Next(2, 21);
+
+            Data.enemyLocations[i] = randomNum;
+            Debug.Log(Data.enemyLocations[i]);
+        }
+    }
+
 
     void Update() {
-        if (toggleNotes)  // Toggle for the visibility of the Notebook
-            notebookUI.SetActive(true);
-        if (!toggleNotes)
-            notebookUI.SetActive(false);
+        notebookUI.SetActive(toggleNotes);  // Toggles the notebook and HUD visibility
+        arrowUI.SetActive(!toggleNotes);
 
         if (Input.GetKeyDown(KeyCode.Escape))  // Keybind to hide the Notebook
             toggleNotes = !toggleNotes;
-
-        for (int i = 0; i < 3; i++) {  // Display for arrows to go to different rooms
-            arrowText[i].text = $"Travel to room {Data.rooms[Data.currentRoom][i]}";
-        }  // The current room/floor text
-        roomText.text = $"You are in Room {Data.currentRoom}, Floor {Data.floor}";
     }
+
 
     public void MovePlayer(int arrowNum) {  // code for moving the player (will be more later trust me)
         Data.currentRoom = Data.rooms[Data.currentRoom][arrowNum];
+        StartCoroutine(fadeOut());  // fades in black background
+    }
+
+
+    IEnumerator fadeOut() {  // fades in black background
+        Image blackImage = blackBackground.GetComponent<Image>();
+        blackBackground.SetActive(true);
+
+        for (int i = 1; i <= 25; i++) {  // increases the alpha value slowly
+            Color tempColor = blackImage.color;
+            tempColor.a += 0.04f;
+            blackImage.color = tempColor;
+            
+            yield return null;
+        }
+
+        SetUI();
+
+        string line = "";
+
+        List<int> adjacentRooms = Data.rooms[Data.currentRoom];
+        List<int> enemyRooms = Data.enemyLocations;
+
+        for (int i = 0; i < 6; i++) {
+            if (adjacentRooms.Contains(enemyRooms[i])) {
+                line += "\nI sense an enemy nearby!";
+                
+                if (i >= 3 && i < 5)
+                    line += "\nI sense a hazard nearby!";
+
+                if (i == 5)
+                    line += "\nI sense a boss nearby!";
+            }
+
+            if (Data.currentRoom == enemyRooms[i])
+                line += "\nBro you are COOKED...";
+        }
+
+        StartCoroutine(typeWrite(transitionText, line));
+        yield return new WaitForSeconds(line.Length * 0.05f + 2f);  // waits the time for the text to type plus 3s
+
+        for (int i = 1; i <= 25; i++) {  // reduces the alpha value slowly
+            Color tempColor = blackImage.color;
+            tempColor.a -= 0.04f;
+            blackImage.color = tempColor;
+            
+            yield return null;
+        }
+
+        blackBackground.SetActive(false);
+    }
+
+
+    IEnumerator typeWrite(TextMeshProUGUI textBox, string line) {  // typewriter text effect
+        textBox.enabled = true;
+
+        textBox.text = line;
+        textBox.ForceMeshUpdate();  // forces mesh update to remove issues with character count
+
+        int totalCharacters = textBox.textInfo.characterCount;
+
+        for (int i = 0; i <= totalCharacters; i++) {
+            textBox.maxVisibleCharacters = i;
+            yield return new WaitForSeconds(0.05f);  // waits 0.05s between inputs
+        }
+
+        yield return new WaitForSeconds(2f);  // waits an extra 2s
+
+        textBox.enabled = false;
+    }
+
+    public void SetUI() {
+        for (int i = 0; i < 3; i++) {  // Display for arrows to go to different rooms
+            arrowText[i].text = $"Travel to room {Data.rooms[Data.currentRoom][i]}";
+        } 
+
+        roomText.text = $"You are in Room {Data.currentRoom}, Floor {Data.floor}";  // The current room/floor text
     }
 }

@@ -16,8 +16,9 @@
 
 **Wednesday 13/5/26** - *(No class due to Athletics Carnival)*
 
-**Thursday 14/5/26** - Today
-**Friday 15/5/26**
+**Thursday 14/5/26** - Today, I completed more of my documentation. I finished the first section completely as well as the research on *The Genesis of Wumpus*. I also started one of the most vital part of the programming aspect, which was the map for my game. I did this by creating a dictionary of each room with the rooms it attaches to, which likely isn't the most optimised solution but it would work for now.
+
+**Friday 15/5/26** - Today I did more programming and added a transition between rooms, as well as detection for if there is an enemy or boss adjacent to your room.
 
 ## Week 5 (B Week) - Focus: Programming, Asset Creation/Identification and Journaling
 
