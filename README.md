@@ -22,8 +22,8 @@
 
 ## Week 5 (B Week) - Focus: Programming, Asset Creation/Identification and Journaling
 
-**Monday 18/5/26**
-**Wednesday 20/5/26**
+**Monday 18/5/26** - RAAAAAAAAAAAAH CODING
+**Wednesday 20/5/26** - RAAAAAAAAAAAH CODING ENEMIES AND STUFF ANIMATION RAAAAAAHHHHHHHHHHh
 **Friday 22/5/26**
 
 ## Week 6 (A Week) - Focus: Programming, Asset Creation/Identification and Journaling

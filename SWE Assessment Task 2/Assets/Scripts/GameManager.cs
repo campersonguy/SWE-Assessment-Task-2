@@ -23,7 +23,7 @@ public static class Data {
         {11, new List<int> { 7,  12, 16 } },
         {12, new List<int> { 8,  11, 15 } },
         {13, new List<int> { 9,  15, 14 } },
-        {14, new List<int> { 10, 15, 18 } },
+        {14, new List<int> { 10, 13, 18 } },
         {15, new List<int> { 12, 13, 17 } },
         {16, new List<int> { 11, 17, 19 } },
         {17, new List<int> { 15, 16, 18 } },
@@ -35,34 +35,44 @@ public static class Data {
     public static Dictionary<int, ArrayList> things = new Dictionary<int, ArrayList> {
 
         // Enemies        |  Name             |  Minimum Floor    |  Spawn Weight     |  Damage           |  Flavour Text
-        {0, new ArrayList {"The Boing",        1,                  1,                  1,                  "" } },
-        {1, new ArrayList {} },
-        {2, new ArrayList {} },
-        {3, new ArrayList {} },
-        {4, new ArrayList {} },
-        {5, new ArrayList {} },
+        {0,  new ArrayList {"The Boing",        1,                  1,                  1,                  "I sense a bounce!" } },
+        {1,  new ArrayList {"",                 99} },
+        {2,  new ArrayList {"",                 99} },
+        {3,  new ArrayList {"",                 99} },
+        {4,  new ArrayList {"",                 99} },
+        {5,  new ArrayList {"",                 99} },
 
         // Bosses         |  Name             |  Minimum Floor    |  Spawn Weight     |  Flavour Text
-        {6, new ArrayList {"The Wumpus",       1,                  1,                  "I smell a wumpus!" } },
-        {7, new ArrayList {"The Bunga Booga",  3,                  2,                  "I smell hot dogs!" } },
-        {8, new ArrayList {""   } },
-        {9, new ArrayList {} },
-        {10, new ArrayList {} },
-        {11, new ArrayList {} },
+        {6,  new ArrayList {"The Wumpus",       1,                  1,                  "I smell a wumpus!" } },
+        {7,  new ArrayList {"The Bunga Booga",  3,                  2,                  "I smell hot dogs!" } },
+        {8,  new ArrayList {""   } },
+        {9,  new ArrayList {"",                 99} },
+        {10, new ArrayList {"",                 99} },
+        {11, new ArrayList {"",                 99} },
 
-        // Bosses         |  Name             |  Minimum Floor    |  Spawn Weight     |  Flavour Text
-        {12, new ArrayList {"The Wumpus",       1,                  1,                  "I smell a wumpus!" } },
-        {13, new ArrayList {} },
-        {14, new ArrayList {""   } },
-        {15, new ArrayList {} },
-        {16, new ArrayList {} },
-        {17, new ArrayList {} },
+        // Hazards         |  Name             |  Minimum Floor    |  Spawn Weight     |  Flavour Text
+        {12, new ArrayList {"Bottomless Pit",   1,                  1,                  "I feel a draft!" } },
+        {13, new ArrayList {"Superbats",        1,                  1,                  "Bats nearby!"} },
+        {14, new ArrayList {"",                 99   } },
+        {15, new ArrayList {"",                 99} },
+        {16, new ArrayList {"",                 99} },
+        {17, new ArrayList {"",                 99} },
+    };
+
+    public static Dictionary<int, string> damageText = new Dictionary<int, string> {
+        {0,  "The Boing bounced into you! You took 1 damage.\nThe Boing bounced away..." },
+        {1,  "" },
+        {6,  "The Wumpus bumped you! You took 4 damage.\nThe Wumpus is on the move..."},
+        {7,  ""},
+        {12, "You fell into a bottomless pit! You took all of the damage.\nYou died! HAHHAHAAH LOSER"},
+        {13, "You were carried away by Superbats! You suck IDIOT"},
     };
 
     public static int currentRoom = 1;
     public static int floor = 1;
 
-    public static List<int> enemyLocations = new List<int> { 0, 0, 0, 0, 0, 0 };
+    public static List<int> enemies = new List<int> {};
+    public static List<int> enemyLocations = new List<int> {};
 
 }
 
@@ -79,19 +89,43 @@ public class GameManager : MonoBehaviour {
     public TextMeshProUGUI roomText;
     public TextMeshProUGUI transitionText;
 
+    public Image hpFill;
+    public TextMeshProUGUI hpText;
+
     public bool toggleNotes;
 
+    public float health;
+    public float maxHealth;
+
     private System.Random random = new System.Random();
+
+    public Animator animator;
 
 
     void Start() {
         SetUI();
 
         for (int i = 0; i < 6; i++) {
-            int randomNum = random.Next(2, 21);
+            int randomNum = 0;
 
-            Data.enemyLocations[i] = randomNum;
-            Debug.Log(Data.enemyLocations[i]);
+            while (true) {
+                randomNum = random.Next(2, 21);
+
+                if (!Data.enemyLocations.Contains(randomNum))
+                    break;
+            }
+
+            if (i < 3)
+                Data.enemies.Add(random.Next(0, 1));
+
+            if (i >= 3 && i < 5)
+                Data.enemies.Add(random.Next(12, 14));
+
+            if (i == 5)
+                Data.enemies.Add(random.Next(6, 8));
+
+            Data.enemyLocations.Add(randomNum);
+            Debug.Log($"{Data.enemies[i]} - {Data.enemyLocations[i]}");
         }
     }
 
@@ -102,6 +136,12 @@ public class GameManager : MonoBehaviour {
 
         if (Input.GetKeyDown(KeyCode.Escape))  // Keybind to hide the Notebook
             toggleNotes = !toggleNotes;
+
+        if (Input.GetKeyDown(KeyCode.V))
+            animator.SetBool("Boss Encounter", true);
+
+        hpFill.fillAmount = health / maxHealth;
+        hpText.text = $"{health} / {maxHealth}";
     }
 
 
@@ -132,7 +172,8 @@ public class GameManager : MonoBehaviour {
 
         for (int i = 0; i < 6; i++) {
             if (adjacentRooms.Contains(enemyRooms[i])) {
-                line += "\nI sense an enemy nearby!";
+                if (i < 3)
+                    line += "\nI sense an enemy nearby!";
                 
                 if (i >= 3 && i < 5)
                     line += "\nI sense a hazard nearby!";
@@ -141,8 +182,11 @@ public class GameManager : MonoBehaviour {
                     line += "\nI sense a boss nearby!";
             }
 
-            if (Data.currentRoom == enemyRooms[i])
-                line += "\nBro you are COOKED...";
+            if (Data.currentRoom == enemyRooms[i]) {
+                line += $"\n{Data.damageText[Data.enemies[i]]}";
+                enemyRooms[i] = 99;
+                health -= 1;
+            }
         }
 
         StartCoroutine(typeWrite(transitionText, line));
