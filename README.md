@@ -23,8 +23,12 @@
 ## Week 5 (B Week) - Focus: Programming, Asset Creation/Identification and Journaling
 
 **Monday 18/5/26** - RAAAAAAAAAAAAH CODING
-**Wednesday 20/5/26** - RAAAAAAAAAAAH CODING ENEMIES AND STUFF ANIMATION RAAAAAAHHHHHHHHHHh
-**Friday 22/5/26**
+
+**Wednesday 20/5/26** - I wanted to try and add animation, so I created an animated background for when you encountered an enemy or a boss. I watched a short tutorial to remind myself of how to use Unity's built-in animation system, and by the end of the lesson I was able to trigger an animation sequence. I also started working on a player sprite animation.
+
+**Friday 22/5/26** - I decided that the background to my game made it feel very low-quality since nothing was moving and there were only buttons to click. To solve this, I decided to change the game so that, instead of a background and clicking arrows to move, there would be a movable player sprite. I created a player sprite similar to the one I used in my Year 9 game project, however I made it larger and with more detail (such as a bit of shading) to make it look better and more polished. I made it able to move and added the appropriate animations and the ability for it to have collisions. I also completed the Success Criteria and Procedural vs OOP table for my documentation.
+
+**Weekend 23/5/26 - 24/5/26** - DO THE SYSTEM DIAGRAMS LOCK IN BRO
 
 ## Week 6 (A Week) - Focus: Programming, Asset Creation/Identification and Journaling
 
