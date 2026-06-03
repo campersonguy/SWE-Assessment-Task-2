@@ -32,27 +32,27 @@ public static class Data {
         {20, new List<int> { 6,  18, 19 } },  // extremely unoptimised fix ts later
     };
 
-    public static Dictionary<int, ArrayList> things = new Dictionary<int, ArrayList> {
+    public static Dictionary<int, ArrayList> obstacles = new Dictionary<int, ArrayList> {
 
         // Enemies        |  Name             |  Minimum Floor    |  Spawn Weight     |  Damage           |  Flavour Text
-        {0,  new ArrayList {"The Boing",        1,                  1,                  1,                  "I sense a bounce!" } },
-        {1,  new ArrayList {"",                 99} },
+        {0,  new ArrayList {"Goblin",           1,                  1,                  1,                  "I sense !" } },
+        {1,  new ArrayList {"Bat",              1,                  1,                  1,                  "I sense !"} },
         {2,  new ArrayList {"",                 99} },
         {3,  new ArrayList {"",                 99} },
         {4,  new ArrayList {"",                 99} },
         {5,  new ArrayList {"",                 99} },
 
-        // Bosses         |  Name             |  Minimum Floor    |  Spawn Weight     |  Flavour Text
-        {6,  new ArrayList {"The Wumpus",       1,                  1,                  "I smell a wumpus!" } },
-        {7,  new ArrayList {"The Bunga Booga",  3,                  2,                  "I smell hot dogs!" } },
-        {8,  new ArrayList {""   } },
+        // Bosses         |  Name             |  Minimum Floor    |  Spawn Weight     |  Damage           |  Flavour Text
+        {6,  new ArrayList {"The Wumpus",       1,                  1,                  99,                 "I smell a wumpus!" } },
+        {7,  new ArrayList {"",                 3,                  2,                  99,                 "I smell!" } },
+        {8,  new ArrayList {"",                 99} },
         {9,  new ArrayList {"",                 99} },
         {10, new ArrayList {"",                 99} },
         {11, new ArrayList {"",                 99} },
 
-        // Hazards         |  Name             |  Minimum Floor    |  Spawn Weight     |  Flavour Text
-        {12, new ArrayList {"Bottomless Pit",   1,                  1,                  "I feel a draft!" } },
-        {13, new ArrayList {"Superbats",        1,                  1,                  "Bats nearby!"} },
+        // Hazards         |  Name             |  Minimum Floor    |  Spawn Weight     |  Damage           |  Flavour Text
+        {12, new ArrayList {"Bottomless Pit",   1,                  1,                  99,                 "I feel a draft!" } },
+        {13, new ArrayList {"Superbats",        1,                  1,                  99,                 "I feel fluttering nearby!"} },
         {14, new ArrayList {"",                 99   } },
         {15, new ArrayList {"",                 99} },
         {16, new ArrayList {"",                 99} },
@@ -79,9 +79,17 @@ public static class Data {
 
 public class GameManager : MonoBehaviour {
 
+    public PlayerController playerController;
+    public Enemies enemy;
+
+    public GameObject[] obstacles;
+    public GameObject baseEnemy;
+
     public GameObject notebookUI;
     public GameObject arrowUI;
     public GameObject uiArea;
+    
+    public GameObject player;
 
     public GameObject blackBackground;
 
@@ -89,13 +97,7 @@ public class GameManager : MonoBehaviour {
     public TextMeshProUGUI roomText;
     public TextMeshProUGUI transitionText;
 
-    public Image hpFill;
-    public TextMeshProUGUI hpText;
-
     public bool toggleNotes;
-
-    public float health;
-    public float maxHealth;
 
     private System.Random random = new System.Random();
 
@@ -105,27 +107,33 @@ public class GameManager : MonoBehaviour {
     void Start() {
         SetUI();
 
-        for (int i = 0; i < 6; i++) {
+        for (int i = 0; i < 5; i++) {
+            GameObject enemy1 = Instantiate(baseEnemy);
+            Enemies enemies = enemy1.GetComponent<Enemies>();
+
             int randomNum = 0;
 
             while (true) {
                 randomNum = random.Next(2, 21);
 
-                if (!Data.enemyLocations.Contains(randomNum))
+                if (!Data.enemyLocations.Contains(randomNum) || !Data.rooms[1].Contains(randomNum)) {
+                    enemies.currentRoom = randomNum;
                     break;
+                }
             }
 
-            if (i < 3)
-                Data.enemies.Add(random.Next(0, 1));
+            if (i == 0 || i == 1)
+                randomNum = random.Next(0, 2);
+            if (i == 2 || i == 3)
+                randomNum = random.Next(12, 14);
+            if (i == 4)
+                randomNum = random.Next(6, 7);
 
-            if (i >= 3 && i < 5)
-                Data.enemies.Add(random.Next(12, 14));
+            enemies.enemyName = Data.obstacles[randomNum][0].ToString();
+            enemies.damage = int.Parse(Data.obstacles[randomNum][3].ToString());
+            enemies.flavourText = Data.obstacles[randomNum][4].ToString();
 
-            if (i == 5)
-                Data.enemies.Add(random.Next(6, 8));
-
-            Data.enemyLocations.Add(randomNum);
-            Debug.Log($"{Data.enemies[i]} - {Data.enemyLocations[i]}");
+            enemy1.name = enemies.enemyName;
         }
     }
 
@@ -134,14 +142,8 @@ public class GameManager : MonoBehaviour {
         notebookUI.SetActive(toggleNotes);  // Toggles the notebook and HUD visibility
         arrowUI.SetActive(!toggleNotes);
 
-        if (Input.GetKeyDown(KeyCode.Escape))  // Keybind to hide the Notebook
+        if (Input.GetKeyDown(KeyCode.Tab))  // Keybind to hide the Notebook
             toggleNotes = !toggleNotes;
-
-        if (Input.GetKeyDown(KeyCode.V))
-            animator.SetBool("Boss Encounter", true);
-
-        hpFill.fillAmount = health / maxHealth;
-        hpText.text = $"{health} / {maxHealth}";
     }
 
 
@@ -155,49 +157,26 @@ public class GameManager : MonoBehaviour {
         Image blackImage = blackBackground.GetComponent<Image>();
         blackBackground.SetActive(true);
 
-        for (int i = 1; i <= 25; i++) {  // increases the alpha value slowly
+        for (int i = 1; i <= 50; i++) {  // increases the alpha value slowly
             Color tempColor = blackImage.color;
-            tempColor.a += 0.04f;
+            tempColor.a += 0.02f;
             blackImage.color = tempColor;
             
-            yield return null;
+            yield return new WaitForSeconds(0.01f);
         }
 
         SetUI();
 
-        string line = "";
+        yield return new WaitForSeconds(0.3f);
 
-        List<int> adjacentRooms = Data.rooms[Data.currentRoom];
-        List<int> enemyRooms = Data.enemyLocations;
+        player.transform.position = new Vector3(0, 0, 0);
 
-        for (int i = 0; i < 6; i++) {
-            if (adjacentRooms.Contains(enemyRooms[i])) {
-                if (i < 3)
-                    line += "\nI sense an enemy nearby!";
-                
-                if (i >= 3 && i < 5)
-                    line += "\nI sense a hazard nearby!";
-
-                if (i == 5)
-                    line += "\nI sense a boss nearby!";
-            }
-
-            if (Data.currentRoom == enemyRooms[i]) {
-                line += $"\n{Data.damageText[Data.enemies[i]]}";
-                enemyRooms[i] = 99;
-                health -= 1;
-            }
-        }
-
-        StartCoroutine(typeWrite(transitionText, line));
-        yield return new WaitForSeconds(line.Length * 0.05f + 2f);  // waits the time for the text to type plus 3s
-
-        for (int i = 1; i <= 25; i++) {  // reduces the alpha value slowly
+        for (int i = 1; i <= 50; i++) {  // reduces the alpha value slowly
             Color tempColor = blackImage.color;
-            tempColor.a -= 0.04f;
+            tempColor.a -= 0.02f;
             blackImage.color = tempColor;
             
-            yield return null;
+            yield return new WaitForSeconds(0.01f);
         }
 
         blackBackground.SetActive(false);

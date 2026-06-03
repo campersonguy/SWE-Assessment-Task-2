@@ -8,7 +8,12 @@ using TMPro;
 
 public class PlayerController : MonoBehaviour {
 
+    public float health;
+    public float maxHealth;
     public float speed;
+
+    public Image hpFill;
+    public TextMeshProUGUI hpText;
 
     public Animator anim;
     
@@ -19,6 +24,10 @@ public class PlayerController : MonoBehaviour {
     }
 
     void Update() {
+        if (Input.GetKeyDown(KeyCode.L)) {
+            StartCoroutine(listen());
+        }
+
         float moveX = Input.GetAxis("Horizontal");
         float moveY = Input.GetAxis("Vertical");
 
@@ -27,13 +36,24 @@ public class PlayerController : MonoBehaviour {
         if (moveX == 0 && moveY == 0)
             anim.SetInteger("walkDir", 0);
 
-        if (Input.GetAxis("Vertical") > 0)
+        if (moveY > 0)
             anim.SetInteger("walkDir", 3);
-        if (Input.GetAxis("Vertical") < 0)
+        if (moveY < 0)
             anim.SetInteger("walkDir", 1);
-        if (Input.GetAxis("Horizontal") > 0)
+        if (moveX > 0)
             anim.SetInteger("walkDir", 4);
-        if (Input.GetAxis("Horizontal") < 0)
+        if (moveX < 0)
             anim.SetInteger("walkDir", 2);
+        
+        hpFill.fillAmount = health / maxHealth;
+        hpText.text = $"{health} / {maxHealth}";
+    }
+
+    IEnumerator listen() {
+        anim.SetTrigger("listen");
+
+        yield return new WaitForSeconds(5f);
+
+        anim.SetTrigger("stopListen");
     }
 }

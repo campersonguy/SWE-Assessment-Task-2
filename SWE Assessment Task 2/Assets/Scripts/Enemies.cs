@@ -7,14 +7,20 @@ using System.Collections.Generic;
 using TMPro;
 
 public class Enemies : MonoBehaviour {
+
+    public GameManager gManager;
     
     public string enemyName;
     public string flavourText;
 
-    public float spawnWeight;
-    public float minFloor;
     public float damage;
 
+    public float currentRoom;
+
+
+    public void PlayerCheck() {
+
+    }
 
     void DamagePlayer() {
         
@@ -23,7 +29,5 @@ public class Enemies : MonoBehaviour {
 }
 
 public class Bosses : Enemies {
-
-    
 
 }

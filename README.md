@@ -28,19 +28,18 @@
 
 **Friday 22/5/26** - I decided that the background to my game made it feel very low-quality since nothing was moving and there were only buttons to click. To solve this, I decided to change the game so that, instead of a background and clicking arrows to move, there would be a movable player sprite. I created a player sprite similar to the one I used in my Year 9 game project, however I made it larger and with more detail (such as a bit of shading) to make it look better and more polished. I made it able to move and added the appropriate animations and the ability for it to have collisions. I also completed the Success Criteria and Procedural vs OOP table for my documentation.
 
-**Weekend 23/5/26 - 24/5/26** - DO THE SYSTEM DIAGRAMS LOCK IN BRO
-
 ## Week 6 (A Week) - Focus: Programming, Asset Creation/Identification and Journaling
 
-**Monday 25/5/26**
-**Wednesday 27/5/26**
-**Thursday 28/5/26**
-**Friday 29/5/26**
+**Monday 25/5/26** - Today I completed my Class Diagram in LucidChart. I also went over some of idk vro
+
+**Wednesday 27/5/26** - Created background map and room transitions cleaner
+**Thursday 28/5/26** - dfd
+**Friday 29/5/26** - MINECRAFT EDUCATION LESGOOOOOOOO
 
 ## Week 7 (B Week) - Focus: Programming, Asset Creation/Identification and Journaling
 
-**Monday 1/6/26**
-**Wednesday 3/6/26**
+**Monday 1/6/26** - structure chart
+**Wednesday 3/6/26** - new animations and sorting into OOP
 **Friday 5/6/26**
 
 ## Week 8 (A Week) - Focus: Programming, Journaling and Testing and Evaluating
