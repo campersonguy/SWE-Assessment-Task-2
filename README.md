@@ -32,15 +32,19 @@
 
 **Monday 25/5/26** - Today I completed my Class Diagram in LucidChart. I also went over some of idk vro
 
-**Wednesday 27/5/26** - Created background map and room transitions cleaner
-**Thursday 28/5/26** - dfd
-**Friday 29/5/26** - MINECRAFT EDUCATION LESGOOOOOOOO
+**Wednesday 27/5/26** - Created background map and room transitions cleaner Today, I created a map for the background of my game that the player would be in. I looked up some pixel art caves to base the colour scheme of mine off of, and about halfway through the lesson the map was done. I also smoothed out the room transitions by adding hitboxes in the corners of the map to allow the player to walk between rooms.
+
+**Thursday 28/5/26** - Today, I completed my Data Flow Diagram and continued coding. The data flow diagram was pretty easy to finish, although I will likely add some more detail to it later if it is too simple. I added hitboxes around the map to prevent the player from walking off the screen.
+
+**Friday 29/5/26** - We played Minecraft: Education Edition.
 
 ## Week 7 (B Week) - Focus: Programming, Asset Creation/Identification and Journaling
 
-**Monday 1/6/26** - structure chart
-**Wednesday 3/6/26** - new animations and sorting into OOP
-**Friday 5/6/26**
+**Monday 1/6/26** - Today, I fully completed my structure chart. It took a while to finish, but I modelled it after the structure chart I made last term and read through Mr Clark's feedback to make sure it was improved. Mainly, I realised that structure charts do not use arrows, which was a mistake I made last term that I made sure to improve upon. I ran out of time for now, but in the future I need to restructure the chart to give it a tree-diagram-like shape, instead of the flow chart look that it currently has.
+
+**Wednesday 3/6/26** - During the double, I created a new animation that would play whenever the player listens to dialogue, which would be when they get given warnings of nearby obstacles. It took some time to add it into the animation cycle, but I managed to get it working. I also separated most of my variables and functions from my Game Manager file into the other Player and Obstacle objects to make the OOP more clear. I realised that most of my code was taking place inside one object since I'm very used to coding imperatively.
+
+**Friday 5/6/26** - Dialogue works now 
 
 ## Week 8 (A Week) - Focus: Programming, Journaling and Testing and Evaluating
 

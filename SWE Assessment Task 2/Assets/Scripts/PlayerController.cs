@@ -12,11 +12,15 @@ public class PlayerController : MonoBehaviour {
     public float maxHealth;
     public float speed;
 
+    public int currentRoom;
+
     public Image hpFill;
     public TextMeshProUGUI hpText;
 
     public Animator anim;
     
+    public bool movementLock = false;
+
     Rigidbody2D rb;
     
     void Start() {
@@ -24,14 +28,11 @@ public class PlayerController : MonoBehaviour {
     }
 
     void Update() {
-        if (Input.GetKeyDown(KeyCode.L)) {
-            StartCoroutine(listen());
-        }
-
         float moveX = Input.GetAxis("Horizontal");
         float moveY = Input.GetAxis("Vertical");
 
-        rb.linearVelocity = new Vector2(moveX * speed, moveY * speed);
+        if (!movementLock)
+            rb.linearVelocity = new Vector2(moveX * speed, moveY * speed);
 
         if (moveX == 0 && moveY == 0)
             anim.SetInteger("walkDir", 0);
@@ -47,13 +48,5 @@ public class PlayerController : MonoBehaviour {
         
         hpFill.fillAmount = health / maxHealth;
         hpText.text = $"{health} / {maxHealth}";
-    }
-
-    IEnumerator listen() {
-        anim.SetTrigger("listen");
-
-        yield return new WaitForSeconds(5f);
-
-        anim.SetTrigger("stopListen");
     }
 }

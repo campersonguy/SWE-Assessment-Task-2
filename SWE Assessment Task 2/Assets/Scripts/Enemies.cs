@@ -9,18 +9,25 @@ using TMPro;
 public class Enemies : MonoBehaviour {
 
     public GameManager gManager;
+
+    public GameObject projectile;
     
     public string enemyName;
     public string flavourText;
 
-    public float damage;
+    public int damage;
+    public int projectileCount;
 
-    public float currentRoom;
+    public int currentRoom;
 
 
     public void PlayerCheck() {
 
     }
+
+    // IEnumerator Shoot() {
+
+    // }
 
     void DamagePlayer() {
         

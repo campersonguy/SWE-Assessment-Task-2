@@ -68,7 +68,6 @@ public static class Data {
         {13, "You were carried away by Superbats! You suck IDIOT"},
     };
 
-    public static int currentRoom = 1;
     public static int floor = 1;
 
     public static List<int> enemies = new List<int> {};
@@ -79,7 +78,7 @@ public static class Data {
 
 public class GameManager : MonoBehaviour {
 
-    public PlayerController playerController;
+    public PlayerController player;
     public Enemies enemy;
 
     public GameObject[] obstacles;
@@ -89,13 +88,15 @@ public class GameManager : MonoBehaviour {
     public GameObject arrowUI;
     public GameObject uiArea;
     
-    public GameObject player;
+    public GameObject playerSprite;
 
     public GameObject blackBackground;
 
     public TextMeshProUGUI[] arrowText;
     public TextMeshProUGUI roomText;
-    public TextMeshProUGUI transitionText;
+
+    public Image dialogueBox;
+    public TextMeshProUGUI dialogueText;
 
     public bool toggleNotes;
 
@@ -144,12 +145,30 @@ public class GameManager : MonoBehaviour {
 
         if (Input.GetKeyDown(KeyCode.Tab))  // Keybind to hide the Notebook
             toggleNotes = !toggleNotes;
+
+        if (Input.GetKeyDown(KeyCode.L))
+        StartCoroutine(dialogue("EWZALOPwzaexsyubgoimjwzaexsrcdoimjkzaesxrcduvftiybgimjokrszerdvftygimjpokeszxrcdvftybgnhuimjokxsrdcftuvybgnhuimjokeszxrdyc"));
     }
 
 
     public void MovePlayer(int arrowNum) {  // code for moving the player (will be more later trust me)
-        Data.currentRoom = Data.rooms[Data.currentRoom][arrowNum];
+        player.currentRoom = Data.rooms[player.currentRoom][arrowNum];
         StartCoroutine(fadeOut());  // fades in black background
+    }
+
+
+    IEnumerator dialogue(string text) {
+        player.movementLock = true;
+
+        player.anim.SetTrigger("listen");
+        yield return new WaitForSeconds(2);
+        StartCoroutine(typeWrite(dialogueText, text));
+        yield return new WaitForSeconds(text.Length * 0.05f + 3f);
+        player.anim.SetTrigger("stopListen");
+
+        yield return new WaitForSeconds(2.8f);
+
+        player.movementLock = false;
     }
 
 
@@ -169,7 +188,7 @@ public class GameManager : MonoBehaviour {
 
         yield return new WaitForSeconds(0.3f);
 
-        player.transform.position = new Vector3(0, 0, 0);
+        playerSprite.transform.position = new Vector3(0, 0, 0);
 
         for (int i = 1; i <= 50; i++) {  // reduces the alpha value slowly
             Color tempColor = blackImage.color;
@@ -185,6 +204,7 @@ public class GameManager : MonoBehaviour {
 
     IEnumerator typeWrite(TextMeshProUGUI textBox, string line) {  // typewriter text effect
         textBox.enabled = true;
+        dialogueBox.enabled = true;
 
         textBox.text = line;
         textBox.ForceMeshUpdate();  // forces mesh update to remove issues with character count
@@ -199,13 +219,14 @@ public class GameManager : MonoBehaviour {
         yield return new WaitForSeconds(2f);  // waits an extra 2s
 
         textBox.enabled = false;
+        dialogueBox.enabled = false;
     }
 
     public void SetUI() {
         for (int i = 0; i < 3; i++) {  // Display for arrows to go to different rooms
-            arrowText[i].text = $"Travel to room {Data.rooms[Data.currentRoom][i]}";
+            arrowText[i].text = $"Travel to room {Data.rooms[player.currentRoom][i]}";
         } 
 
-        roomText.text = $"You are in Room {Data.currentRoom}, Floor {Data.floor}";  // The current room/floor text
+        roomText.text = $"You are in Room {player.currentRoom}, Floor {Data.floor}";  // The current room/floor text
     }
 }
