@@ -18,6 +18,8 @@ public class PlayerController : MonoBehaviour {
     public TextMeshProUGUI hpText;
 
     public Animator anim;
+
+    public GameObject projectile;
     
     public bool movementLock = false;
 
@@ -31,8 +33,12 @@ public class PlayerController : MonoBehaviour {
         float moveX = Input.GetAxis("Horizontal");
         float moveY = Input.GetAxis("Vertical");
 
-        if (!movementLock)
+        if (!movementLock) {
             rb.linearVelocity = new Vector2(moveX * speed, moveY * speed);
+        }
+        else {
+            rb.linearVelocity = new Vector2(0, 0);
+        }
 
         if (moveX == 0 && moveY == 0)
             anim.SetInteger("walkDir", 0);
@@ -48,5 +54,9 @@ public class PlayerController : MonoBehaviour {
         
         hpFill.fillAmount = health / maxHealth;
         hpText.text = $"{health} / {maxHealth}";
+
+        if (Input.GetKey(KeyCode.F)) {
+            GameObject proj = Instantiate(projectile, transform.position, transform.rotation);
+        }
     }
 }

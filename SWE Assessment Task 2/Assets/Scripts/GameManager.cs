@@ -147,7 +147,7 @@ public class GameManager : MonoBehaviour {
             toggleNotes = !toggleNotes;
 
         if (Input.GetKeyDown(KeyCode.L))
-        StartCoroutine(dialogue("EWZALOPwzaexsyubgoimjwzaexsrcdoimjkzaesxrcduvftiybgimjokrszerdvftygimjpokeszxrcdvftybgnhuimjokxsrdcftuvybgnhuimjokeszxrdyc"));
+        StartCoroutine(dialogue("d"));
     }
 
 
@@ -159,7 +159,7 @@ public class GameManager : MonoBehaviour {
 
     IEnumerator dialogue(string text) {
         player.movementLock = true;
-
+        
         player.anim.SetTrigger("listen");
         yield return new WaitForSeconds(2);
         StartCoroutine(typeWrite(dialogueText, text));
