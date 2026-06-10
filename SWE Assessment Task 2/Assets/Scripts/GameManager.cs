@@ -72,163 +72,172 @@ public static class Data {
 
     public static List<int> enemies = new List<int> {};
     public static List<int> enemyLocations = new List<int> {};
-
 }
 
 
 public class GameManager : MonoBehaviour {
 
+    [Header("References")]
     public PlayerController player;
-    public Enemies enemy;
-
-    public GameObject[] obstacles;
     public GameObject baseEnemy;
+    public GameObject[] obstacles;
 
+    [Header("UI")]
     public GameObject notebookUI;
     public GameObject arrowUI;
     public GameObject uiArea;
-    
-    public GameObject playerSprite;
-
     public GameObject blackBackground;
 
     public TextMeshPro[] arrowText;
     public TextMeshProUGUI roomText;
 
-    public Vector2[] cavePositions;
-
     public Image dialogueBox;
     public TextMeshProUGUI dialogueText;
 
+    [Header("World")]
+    public Vector2[] cavePositions;
+
+    [Header("State")]
     public bool toggleNotes;
 
-    private System.Random random = new System.Random();
-
-    public Animator animator;
-
+    private System.Random rng = new System.Random();
+    private Image blackImage;
+    private Animator anim;
 
     void Start() {
+        anim = GetComponent<Animator>();
+        blackImage = blackBackground.GetComponent<Image>();
+
         SetUI();
-
-        for (int i = 0; i < 5; i++) {
-            GameObject enemy1 = Instantiate(baseEnemy);
-            Enemies enemies = enemy1.GetComponent<Enemies>();
-
-            int randomNum = 0;
-
-            while (true) {
-                randomNum = random.Next(2, 21);
-
-                if (!Data.enemyLocations.Contains(randomNum) || !Data.rooms[1].Contains(randomNum)) {
-                    enemies.currentRoom = randomNum;
-                    break;
-                }
-            }
-
-            if (i == 0 || i == 1)
-                randomNum = random.Next(0, 2);
-            if (i == 2 || i == 3)
-                randomNum = random.Next(12, 14);
-            if (i == 4)
-                randomNum = random.Next(6, 7);
-
-            enemies.enemyName = Data.obstacles[randomNum][0].ToString();
-            enemies.damage = int.Parse(Data.obstacles[randomNum][3].ToString());
-            enemies.flavourText = Data.obstacles[randomNum][4].ToString();
-
-            enemy1.name = enemies.enemyName;
-        }
+        SpawnEnemies();
     }
 
-
     void Update() {
-        notebookUI.SetActive(toggleNotes);  // Toggles the notebook and HUD visibility
+        notebookUI.SetActive(toggleNotes);
         arrowUI.SetActive(!toggleNotes);
 
-        if (Input.GetKeyDown(KeyCode.Tab))  // Keybind to hide the Notebook
+        if (Input.GetKeyDown(KeyCode.Tab))
             toggleNotes = !toggleNotes;
 
         if (Input.GetKeyDown(KeyCode.L))
-        StartCoroutine(dialogue("d"));
+            StartCoroutine(Dialogue("d"));
     }
 
+    // ---------------------------------------------------------
+    // ENEMY SPAWNING
+    // ---------------------------------------------------------
 
-    public void MovePlayer(int arrowNum) {  // code for moving the player (will be more later trust me)
+    private void SpawnEnemies() {
+        for (int i = 0; i < 5; i++) {
+            GameObject enemyObj = Instantiate(baseEnemy);
+            Enemies e = enemyObj.GetComponent<Enemies>();
+
+            int room = GetEnemyRoom(i);
+            e.currentRoom = room;
+
+            e.enemyName = Data.obstacles[room][0].ToString();
+            e.damage = int.Parse(Data.obstacles[room][3].ToString());
+            e.flavourText = Data.obstacles[room][4].ToString();
+
+            enemyObj.name = e.enemyName;
+        }
+    }
+
+    private int GetEnemyRoom(int index) {
+        // Your special-case logic preserved
+        return index switch {
+            0 or 1 => rng.Next(0, 2),
+            2 or 3 => rng.Next(12, 14),
+            4 => rng.Next(6, 7),
+            _ => rng.Next(2, 21)
+        };
+    }
+
+    // ---------------------------------------------------------
+    // PLAYER MOVEMENT
+    // ---------------------------------------------------------
+
+    public void MovePlayer(int arrowNum) {
         player.currentRoom = Data.rooms[player.currentRoom][arrowNum];
-        StartCoroutine(fadeOut(arrowNum));  // fades in black background
+        StartCoroutine(FadeTransition(arrowNum));
     }
 
+    // ---------------------------------------------------------
+    // DIALOGUE
+    // ---------------------------------------------------------
 
-    IEnumerator dialogue(string text) {
+    IEnumerator Dialogue(string text) {
         player.movementLock = true;
-        
-        player.anim.SetTrigger("listen");
-        yield return new WaitForSeconds(2);
-        StartCoroutine(typeWrite(dialogueText, text));
-        yield return new WaitForSeconds(text.Length * 0.05f + 3f);
-        player.anim.SetTrigger("stopListen");
 
+        player.anim.SetTrigger("listen");
+        yield return new WaitForSeconds(2f);
+
+        yield return StartCoroutine(TypeWrite(dialogueText, text));
+
+        player.anim.SetTrigger("stopListen");
         yield return new WaitForSeconds(2.8f);
 
         player.movementLock = false;
     }
 
+    IEnumerator TypeWrite(TextMeshProUGUI box, string line) {
+        dialogueBox.enabled = true;
+        box.enabled = true;
 
-    IEnumerator fadeOut(int arrowNum) {  // fades in black background
-        Image blackImage = blackBackground.GetComponent<Image>();
+        box.text = line;
+        box.ForceMeshUpdate();
+
+        int total = box.textInfo.characterCount;
+
+        for (int i = 0; i <= total; i++) {
+            box.maxVisibleCharacters = i;
+            yield return new WaitForSeconds(0.05f);
+        }
+
+        yield return new WaitForSeconds(2f);
+
+        box.enabled = false;
+        dialogueBox.enabled = false;
+    }
+
+    // ---------------------------------------------------------
+    // FADE TRANSITION
+    // ---------------------------------------------------------
+
+    IEnumerator FadeTransition(int arrowNum) {
         blackBackground.SetActive(true);
 
-        for (int i = 1; i <= 50; i++) {  // increases the alpha value slowly
-            Color tempColor = blackImage.color;
-            tempColor.a += 0.02f;
-            blackImage.color = tempColor;
-            
-            yield return new WaitForSeconds(0.01f);
-        }
+        yield return StartCoroutine(Fade(0f, 1f, 1.5f));
 
         SetUI();
-
-        yield return new WaitForSeconds(0.3f);
-
         player.transform.position = cavePositions[arrowNum];
 
-        for (int i = 1; i <= 50; i++) {  // reduces the alpha value slowly
-            Color tempColor = blackImage.color;
-            tempColor.a -= 0.02f;
-            blackImage.color = tempColor;
-            
-            yield return new WaitForSeconds(0.01f);
-        }
+        yield return StartCoroutine(Fade(1f, 0f, 1.5f));
 
         blackBackground.SetActive(false);
     }
 
+    IEnumerator Fade(float start, float end, float duration) {
+        float t = 0f;
 
-    IEnumerator typeWrite(TextMeshProUGUI textBox, string line) {  // typewriter text effect
-        textBox.enabled = true;
-        dialogueBox.enabled = true;
-
-        textBox.text = line;
-        textBox.ForceMeshUpdate();  // forces mesh update to remove issues with character count
-
-        int totalCharacters = textBox.textInfo.characterCount;
-
-        for (int i = 0; i <= totalCharacters; i++) {
-            textBox.maxVisibleCharacters = i;
-            yield return new WaitForSeconds(0.05f);  // waits 0.05s between inputs
+        while (t < duration) {
+            float a = Mathf.Lerp(start, end, t / duration);
+            blackImage.color = new Color(0, 0, 0, a);
+            t += Time.deltaTime;
+            yield return null;
         }
 
-        yield return new WaitForSeconds(2f);  // waits an extra 2s
-
-        textBox.enabled = false;
-        dialogueBox.enabled = false;
+        blackImage.color = new Color(0, 0, 0, end);
     }
 
-    public void SetUI() {
-        for (int i = 0; i < 3; i++) {  // Display for arrows to go to different rooms
-            arrowText[i].text = $"Room {Data.rooms[player.currentRoom][i]}";
-        } 
+    // ---------------------------------------------------------
+    // UI
+    // ---------------------------------------------------------
 
-        roomText.text = $"You are in Room {player.currentRoom}, Floor {Data.floor}";  // The current room/floor text
+    public void SetUI() {
+        for (int i = 0; i < 3; i++)
+            arrowText[i].text = $"Room {Data.rooms[player.currentRoom][i]}";
+
+        roomText.text = $"You are in Room {player.currentRoom}, Floor {Data.floor}";
     }
 }

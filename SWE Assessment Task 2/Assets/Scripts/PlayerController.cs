@@ -7,57 +7,70 @@ using System.Collections.Generic;
 using TMPro;
 
 public class PlayerController : MonoBehaviour {
-
+    [Header("Stats")]
     public float health;
     public float maxHealth;
     public float speed;
 
-    public int currentRoom;
-
+    [Header("UI")]
     public Image hpFill;
     public TextMeshProUGUI hpText;
 
-    public Animator anim;
-
+    [Header("Combat")]
     public GameObject projectile;
+
+    [Header("State")]
+    public int currentRoom;
     
     public bool movementLock = false;
 
-    Rigidbody2D rb;
-    
+    private Rigidbody2D rb;
+    public Animator anim;
+    private Vector2 input;
+
     void Start() {
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
     }
 
     void Update() {
-        float moveX = Input.GetAxis("Horizontal");
-        float moveY = Input.GetAxis("Vertical");
+        ReadInput();
+        UpdateAnimation();
+        UpdateUI();
 
-        if (!movementLock) {
-            rb.linearVelocity = new Vector2(moveX * speed, moveY * speed);
+        if (Input.GetKeyDown(KeyCode.F))
+            Instantiate(projectile, transform.position, Quaternion.identity);
+    }
+
+    void FixedUpdate() {
+        if (!movementLock)
+            rb.linearVelocity = input * speed;
+        else
+            rb.linearVelocity = Vector2.zero;
+    }
+
+    private void ReadInput() {
+        input.x = Input.GetAxisRaw("Horizontal");
+        input.y = Input.GetAxisRaw("Vertical");
+    }
+
+    private void UpdateAnimation() {
+        if (input == Vector2.zero) {
+            anim.SetInteger("walkDir", 0);
+            return;
+        }
+
+        if (Mathf.Abs(input.x) > Mathf.Abs(input.y)) {
+            anim.SetInteger("walkDir", input.x > 0 ? 4 : 2);
         }
         else {
-            rb.linearVelocity = new Vector2(0, 0);
+            anim.SetInteger("walkDir", input.y > 0 ? 3 : 1);
         }
+    }
 
-        if (moveX == 0 && moveY == 0)
-            anim.SetInteger("walkDir", 0);
-
-        if (moveY > 0)
-            anim.SetInteger("walkDir", 3);
-        if (moveY < 0)
-            anim.SetInteger("walkDir", 1);
-        if (moveX > 0)
-            anim.SetInteger("walkDir", 4);
-        if (moveX < 0)
-            anim.SetInteger("walkDir", 2);
-        
+    private void UpdateUI() {
         hpFill.fillAmount = health / maxHealth;
         hpText.text = $"{health} / {maxHealth}";
-
-        if (Input.GetKey(KeyCode.F)) {
-            GameObject proj = Instantiate(projectile, transform.position, transform.rotation);
-        }
     }
 
     //void OnDrawGizmos() {
