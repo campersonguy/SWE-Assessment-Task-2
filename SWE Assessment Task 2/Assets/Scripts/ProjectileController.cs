@@ -1,14 +1,27 @@
 using UnityEngine;
 
 public class ProjectileController : MonoBehaviour {
-    
-    public int id;
 
-    public GameManager gameManager;
+    public float speed = 5f;
+    public float lifetime = 3f;
 
-    public Rigidbody2D rb;
+    public bool destroySelf = true;
 
-    void Update() {
-        rb.linearVelocity = new Vector2(0, -10);
+    private Vector2 direction;
+    private Rigidbody2D rb;
+
+
+    void Start() {
+        rb = GetComponent<Rigidbody2D>();
+        Destroy(gameObject, lifetime);
+    }
+
+    void FixedUpdate() {
+        rb.linearVelocity = direction * speed;
+    }
+
+    // Call this right after instantiating the projectile
+    public void SetDirection(Vector2 dir) {
+        direction = dir.normalized;
     }
 }

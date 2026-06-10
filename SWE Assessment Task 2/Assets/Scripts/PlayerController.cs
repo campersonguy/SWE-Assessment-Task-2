@@ -59,4 +59,10 @@ public class PlayerController : MonoBehaviour {
             GameObject proj = Instantiate(projectile, transform.position, transform.rotation);
         }
     }
+
+    //void OnDrawGizmos() {
+    //    Gizmos.color = Color.yellow;
+    //    Gizmos.DrawWireSphere(Vector3.zero, 8f);
+    //}
+
 }

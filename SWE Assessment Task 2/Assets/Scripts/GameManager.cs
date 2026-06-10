@@ -10,26 +10,26 @@ using TMPro;
 public static class Data {
 
     public static Dictionary<int, List<int>> rooms = new Dictionary<int, List<int>> {
-        {1, new List<int>  { 2,  3,  6  } },
-        {2, new List<int>  { 1,  4,  5  } },
-        {3, new List<int>  { 1,  7,  19 } },
-        {4, new List<int>  { 2,  7,  8  } },
-        {5, new List<int>  { 2,  9,  10 } },
-        {6, new List<int>  { 1,  10, 20 } },
-        {7, new List<int>  { 3,  4,  11 } },
-        {8, new List<int>  { 4,  9,  12 } },
-        {9, new List<int>  { 8,  5,  13 } },
-        {10, new List<int> { 5,  6,  14 } },
-        {11, new List<int> { 7,  12, 16 } },
-        {12, new List<int> { 8,  11, 15 } },
-        {13, new List<int> { 9,  15, 14 } },
-        {14, new List<int> { 10, 13, 18 } },
-        {15, new List<int> { 12, 13, 17 } },
-        {16, new List<int> { 11, 17, 19 } },
-        {17, new List<int> { 15, 16, 18 } },
-        {18, new List<int> { 14, 17, 20 } },
-        {19, new List<int> { 3,  16, 20 } },
-        {20, new List<int> { 6,  18, 19 } },  // extremely unoptimised fix ts later
+        {1, new List<int>  { 6,  2,  3 } },
+        {2, new List<int>  { 5,  1,  4 } },
+        {3, new List<int>  { 19, 7,  1 } },
+        {4, new List<int>  { 7,  8,  2 } },
+        {5, new List<int>  { 2,  9,  10} },
+        {6, new List<int>  { 1,  10, 20} },
+        {7, new List<int>  { 4,  3,  11} },
+        {8, new List<int>  { 12, 4,  9 } },
+        {9, new List<int>  { 13, 5,  8 } },
+        {10, new List<int> { 14, 6,  5 } },
+        {11, new List<int> { 16, 12, 7 } },
+        {12, new List<int> { 8,  11, 15} },
+        {13, new List<int> { 9,  15, 14} },
+        {14, new List<int> { 10, 18, 13} },
+        {15, new List<int> { 17, 13, 12} },
+        {16, new List<int> { 11, 17, 19} },
+        {17, new List<int> { 15, 16, 18} },
+        {18, new List<int> { 20, 14, 17} },
+        {19, new List<int> { 3,  20, 16} },
+        {20, new List<int> { 18, 19, 6 } },
     };
 
     public static Dictionary<int, ArrayList> obstacles = new Dictionary<int, ArrayList> {
@@ -92,8 +92,10 @@ public class GameManager : MonoBehaviour {
 
     public GameObject blackBackground;
 
-    public TextMeshProUGUI[] arrowText;
+    public TextMeshPro[] arrowText;
     public TextMeshProUGUI roomText;
+
+    public Vector2[] cavePositions;
 
     public Image dialogueBox;
     public TextMeshProUGUI dialogueText;
@@ -153,7 +155,7 @@ public class GameManager : MonoBehaviour {
 
     public void MovePlayer(int arrowNum) {  // code for moving the player (will be more later trust me)
         player.currentRoom = Data.rooms[player.currentRoom][arrowNum];
-        StartCoroutine(fadeOut());  // fades in black background
+        StartCoroutine(fadeOut(arrowNum));  // fades in black background
     }
 
 
@@ -172,7 +174,7 @@ public class GameManager : MonoBehaviour {
     }
 
 
-    IEnumerator fadeOut() {  // fades in black background
+    IEnumerator fadeOut(int arrowNum) {  // fades in black background
         Image blackImage = blackBackground.GetComponent<Image>();
         blackBackground.SetActive(true);
 
@@ -188,7 +190,7 @@ public class GameManager : MonoBehaviour {
 
         yield return new WaitForSeconds(0.3f);
 
-        playerSprite.transform.position = new Vector3(0, 0, 0);
+        player.transform.position = cavePositions[arrowNum];
 
         for (int i = 1; i <= 50; i++) {  // reduces the alpha value slowly
             Color tempColor = blackImage.color;
@@ -224,7 +226,7 @@ public class GameManager : MonoBehaviour {
 
     public void SetUI() {
         for (int i = 0; i < 3; i++) {  // Display for arrows to go to different rooms
-            arrowText[i].text = $"Travel to room {Data.rooms[player.currentRoom][i]}";
+            arrowText[i].text = $"Room {Data.rooms[player.currentRoom][i]}";
         } 
 
         roomText.text = $"You are in Room {player.currentRoom}, Floor {Data.floor}";  // The current room/floor text
