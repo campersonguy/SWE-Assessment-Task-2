@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class ProjectileController : MonoBehaviour {
 
+    public PlayerController player;
+    
     public float speed = 5f;
     public float lifetime = 3f;
 
@@ -13,15 +15,20 @@ public class ProjectileController : MonoBehaviour {
 
     void Start() {
         rb = GetComponent<Rigidbody2D>();
-        Destroy(gameObject, lifetime);
+        if (destroySelf)
+            Destroy(gameObject, lifetime);
     }
 
     void FixedUpdate() {
         rb.linearVelocity = direction * speed;
     }
 
-    // Call this right after instantiating the projectile
     public void SetDirection(Vector2 dir) {
         direction = dir.normalized;
+    }
+
+    void OnTriggerEnter2D(Collider2D other) {
+        if (other.gameObject.name == "Player")
+            player.health -= 1;
     }
 }

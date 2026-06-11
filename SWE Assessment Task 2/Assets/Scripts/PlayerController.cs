@@ -23,6 +23,7 @@ public class PlayerController : MonoBehaviour {
     public int currentRoom;
     
     public bool movementLock = false;
+    public bool inputLock = false;
 
     private Rigidbody2D rb;
     public Animator anim;
@@ -50,8 +51,10 @@ public class PlayerController : MonoBehaviour {
     }
 
     private void ReadInput() {
-        input.x = Input.GetAxisRaw("Horizontal");
-        input.y = Input.GetAxisRaw("Vertical");
+        if (!inputLock) {
+            input.x = Input.GetAxisRaw("Horizontal");
+            input.y = Input.GetAxisRaw("Vertical");
+        }
     }
 
     private void UpdateAnimation() {

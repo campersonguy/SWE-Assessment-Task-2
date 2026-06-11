@@ -206,10 +206,13 @@ public class GameManager : MonoBehaviour {
 
     IEnumerator FadeTransition(int arrowNum) {
         blackBackground.SetActive(true);
+        player.inputLock = true;
 
         yield return StartCoroutine(Fade(0f, 1f, 1.5f));
 
         SetUI();
+
+        player.inputLock = false;
         player.transform.position = cavePositions[arrowNum];
 
         yield return StartCoroutine(Fade(1f, 0f, 1.5f));

@@ -48,9 +48,9 @@
 
 ## Week 8 (A Week) - Focus: Programming, Journaling and Testing and Evaluating
 
-**Monday 8/6/26**
-**Wednesday 10/6/26**
-**Thursday 11/6/26**
+**Monday 8/6/26** - lowkey I got no clue
+**Wednesday 10/6/26** - optimisations, new map, enemies shooting
+**Thursday 11/6/26** - hollow knight lofi (PEAK), made projectiles work
 **Friday 12/6/26**
 
 ## Week 9 (B Week) - Focus: Final Documentation, Creating Presentations and Testing and Evaluating
