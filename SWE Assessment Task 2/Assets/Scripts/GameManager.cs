@@ -97,6 +97,8 @@ public class GameManager : MonoBehaviour {
     [Header("World")]
     public Vector2[] cavePositions;
 
+    public int currentRoom;
+
     [Header("State")]
     public bool toggleNotes;
 
@@ -132,18 +134,19 @@ public class GameManager : MonoBehaviour {
             GameObject enemyObj = Instantiate(baseEnemy);
             Enemies e = enemyObj.GetComponent<Enemies>();
 
-            int room = GetEnemyRoom(i);
-            e.currentRoom = room;
+            int id = GetEnemyID(i);
+            
+            e.currentRoom = rng.Next(1, 21);
 
-            e.enemyName = Data.obstacles[room][0].ToString();
-            e.damage = int.Parse(Data.obstacles[room][3].ToString());
-            e.flavourText = Data.obstacles[room][4].ToString();
+            e.enemyName = Data.obstacles[id][0].ToString();
+            e.damage = int.Parse(Data.obstacles[id][3].ToString());
+            e.flavourText = Data.obstacles[id][4].ToString();
 
             enemyObj.name = e.enemyName;
         }
     }
 
-    private int GetEnemyRoom(int index) {
+    private int GetEnemyID(int index) {
         // Your special-case logic preserved
         return index switch {
             0 or 1 => rng.Next(0, 2),
@@ -158,7 +161,7 @@ public class GameManager : MonoBehaviour {
     // ---------------------------------------------------------
 
     public void MovePlayer(int arrowNum) {
-        player.currentRoom = Data.rooms[player.currentRoom][arrowNum];
+        currentRoom = Data.rooms[currentRoom][arrowNum];
         StartCoroutine(FadeTransition(arrowNum));
     }
 
@@ -206,13 +209,11 @@ public class GameManager : MonoBehaviour {
 
     IEnumerator FadeTransition(int arrowNum) {
         blackBackground.SetActive(true);
-        player.inputLock = true;
 
         yield return StartCoroutine(Fade(0f, 1f, 1.5f));
 
         SetUI();
 
-        player.inputLock = false;
         player.transform.position = cavePositions[arrowNum];
 
         yield return StartCoroutine(Fade(1f, 0f, 1.5f));
@@ -239,8 +240,8 @@ public class GameManager : MonoBehaviour {
 
     public void SetUI() {
         for (int i = 0; i < 3; i++)
-            arrowText[i].text = $"Room {Data.rooms[player.currentRoom][i]}";
+            arrowText[i].text = $"Room {Data.rooms[currentRoom][i]}";
 
-        roomText.text = $"You are in Room {player.currentRoom}, Floor {Data.floor}";
+        roomText.text = $"You are in Room {currentRoom}, Floor {Data.floor}";
     }
 }
