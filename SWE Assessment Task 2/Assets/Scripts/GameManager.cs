@@ -43,7 +43,7 @@ public static class Data {
         {5,  new ArrayList {"",                 99} },
 
         // Bosses         |  Name             |  Minimum Floor    |  Spawn Weight     |  Damage           |  Flavour Text
-        {6,  new ArrayList {"The Wumpus",       1,                  1,                  99,                 "I smell a wumpus!" } },
+        {6,  new ArrayList {"The Wumpus",       1,                  1,                  2,                  "I smell a wumpus!" } },
         {7,  new ArrayList {"",                 3,                  2,                  99,                 "I smell!" } },
         {8,  new ArrayList {"",                 99} },
         {9,  new ArrayList {"",                 99} },
@@ -97,6 +97,8 @@ public class GameManager : MonoBehaviour {
     [Header("World")]
     public Vector2[] cavePositions;
 
+    public int currentRoom;
+
     [Header("State")]
     public bool toggleNotes;
 
@@ -128,28 +130,27 @@ public class GameManager : MonoBehaviour {
     // ---------------------------------------------------------
 
     private void SpawnEnemies() {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 3; i++) {
             GameObject enemyObj = Instantiate(baseEnemy);
             Enemies e = enemyObj.GetComponent<Enemies>();
 
-            int room = GetEnemyRoom(i);
-            e.currentRoom = room;
+            int id = GetEnemyID(i);
 
-            e.enemyName = Data.obstacles[room][0].ToString();
-            e.damage = int.Parse(Data.obstacles[room][3].ToString());
-            e.flavourText = Data.obstacles[room][4].ToString();
+            e.currentRoom = rng.Next(2, 21);
+            e.enemyName = Data.obstacles[id][0].ToString();
+            e.damage = int.Parse(Data.obstacles[id][3].ToString());
+            e.flavourText = Data.obstacles[id][4].ToString();
 
             enemyObj.name = e.enemyName;
         }
     }
 
-    private int GetEnemyRoom(int index) {
+    private int GetEnemyID(int index) {
         // Your special-case logic preserved
         return index switch {
             0 or 1 => rng.Next(0, 2),
-            2 or 3 => rng.Next(12, 14),
-            4 => rng.Next(6, 7),
-            _ => rng.Next(2, 21)
+            2 => rng.Next(6, 7),
+            _ => rng.Next(2, 21),
         };
     }
 
@@ -158,7 +159,7 @@ public class GameManager : MonoBehaviour {
     // ---------------------------------------------------------
 
     public void MovePlayer(int arrowNum) {
-        player.currentRoom = Data.rooms[player.currentRoom][arrowNum];
+        currentRoom = Data.rooms[currentRoom][arrowNum];
         StartCoroutine(FadeTransition(arrowNum));
     }
 
@@ -209,6 +210,7 @@ public class GameManager : MonoBehaviour {
         player.inputLock = true;
 
         yield return StartCoroutine(Fade(0f, 1f, 1.5f));
+        yield return new WaitForSeconds(1.5f);
 
         SetUI();
 
@@ -239,8 +241,8 @@ public class GameManager : MonoBehaviour {
 
     public void SetUI() {
         for (int i = 0; i < 3; i++)
-            arrowText[i].text = $"Room {Data.rooms[player.currentRoom][i]}";
+            arrowText[i].text = $"Room {Data.rooms[currentRoom][i]}";
 
-        roomText.text = $"You are in Room {player.currentRoom}, Floor {Data.floor}";
+        roomText.text = $"You are in Room {currentRoom}, Floor {Data.floor}";
     }
 }

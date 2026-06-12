@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using System;
 using System.Collections;
+using System;
 using System.Collections.Generic;
 using TMPro;
 
@@ -10,52 +10,107 @@ public class Enemies : MonoBehaviour {
 
     [Header("importanc")]
     public GameManager gManager;
+    public PlayerController playerController;
 
     public string enemyName;
     public string flavourText;
 
-    public int damage = 1;
+    public bool visible;
 
     [Header("Movement")]
     public float moveSpeed = 2f;
     public float changeDirectionTime = 2f;
 
     private Rigidbody2D rb;
+    private BoxCollider2D col;
+    private SpriteRenderer sr;
+
     private Vector2 moveDirection;
     private float directionTimer;
 
-    [Header("Shooting")]
-    public GameObject projectilePrefab;
-    public float shootInterval = 3f;
-    public float projectileSpeed = 5f;
-    public float projectileCount = 4;
+    [Header("Violence")]
+    public float aggroRange = 5f;       // distance to start chasing
+    public float deaggroRange = 7f;     // distance to stop chasing
+    public float attackRange = 0.5f;    // distance to attack
+    public float attackCooldown = 1f;
 
-    private float shootTimer;
+    public int damage = 1;
+
+    private bool isAggro = false;
+    private float attackTimer = 0f;
+
+    public Transform player;
+
+    [Header("Health")]
+    public int maxHealth = 1000;
+    public int currentHealth;
+
+    public GameObject healthBar;
+    public GameObject bar;
+    public Image fill;
+
+    public Vector2 offset;
 
     [Header("Location")]
     public int currentRoom;
 
     void Start() {
         rb = GetComponent<Rigidbody2D>();
+        col = GetComponent<BoxCollider2D>();
+        sr = GetComponent<SpriteRenderer>();
+
         PickNewDirection();
+
+        currentHealth = maxHealth;
+
+        bar = Instantiate(healthBar, transform);
+        bar.transform.localPosition = offset;
+
+        fill = bar.transform.Find("Health Bar/Fill").gameObject.GetComponent<Image>();
     }
 
     void FixedUpdate() {
-        // Movement timer
+        visible = (gManager.currentRoom == currentRoom);
+
+        if (visible) {
+            Visible(true);
+
+            float distToPlayer = Vector2.Distance(transform.position, player.position);
+
+            // Aggro logic
+            if (!isAggro && distToPlayer <= aggroRange)
+                isAggro = true;
+
+            if (isAggro && distToPlayer >= deaggroRange)
+                isAggro = false;
+
+            if (isAggro) {
+                ChasePlayer();
+            } else {
+                Wander();
+            }
+
+            attackTimer += Time.fixedDeltaTime;
+            if (isAggro && distToPlayer <= attackRange && attackTimer >= attackCooldown) {
+                AttackPlayer();
+                attackTimer = 0f;
+            }
+        } else {
+            Visible(false);
+        }
+    }
+
+    void Wander() {
         directionTimer += Time.fixedDeltaTime;
-        if (directionTimer >= changeDirectionTime) {
+        if (directionTimer >= changeDirectionTime)
             PickNewDirection();
-        }
 
-        // Apply movement
         rb.linearVelocity = moveDirection * moveSpeed;
+    }
 
-        // Shooting timer
-        shootTimer += Time.fixedDeltaTime;
-        if (shootTimer >= shootInterval) {
-            ShootProjectile();
-            shootTimer = 0f;
-        }
+    void ChasePlayer() {
+        Vector2 dir = (player.position - transform.position).normalized;
+        rb.linearVelocity = dir * moveSpeed;
     }
 
     void PickNewDirection() {
@@ -63,19 +118,38 @@ public class Enemies : MonoBehaviour {
         directionTimer = 0f;
     }
 
-    void ShootProjectile() {
-        for (int i = 0; i < projectileCount; i++) {
-            GameObject proj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
-
-            ProjectileController p = proj.GetComponent<ProjectileController>();
-            Vector2 randomDir = UnityEngine.Random.insideUnitCircle.normalized;
-
-            if (p != null)
-                p.SetDirection(randomDir); // or any direction you want
-        }
+    void AttackPlayer() {
+        StartCoroutine(playerController.TakeDamage(damage));
     }
-}
 
-public class Bosses : Enemies {
+    void Visible(bool state) {
+        sr.enabled = state;
+        col.enabled = state;
+        bar.SetActive(state);
+    }
 
+    public IEnumerator TakeDamage(int amount) {
+        currentHealth -= amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+        fill.fillAmount = (float)currentHealth / maxHealth;
+
+        if (currentHealth <= 0) {
+            Die();
+            yield break;
+        }
+
+        sr.color = new Color32(255, 137, 137, 255);
+        yield return new WaitForSeconds(0.15f);
+        sr.color = new Color32(137, 137, 137, 255);
+    }
+
+    void Die() {
+        Destroy(gameObject);
+    }
+
+    public void OnDrawGizmosSelected() {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+    }
 }

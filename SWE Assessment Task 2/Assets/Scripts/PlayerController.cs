@@ -8,30 +8,38 @@ using TMPro;
 
 public class PlayerController : MonoBehaviour {
     [Header("Stats")]
-    public float health;
+    public float currentHealth;
     public float maxHealth;
     public float speed;
 
     [Header("UI")]
-    public Image hpFill;
+    public Image fill;
     public TextMeshProUGUI hpText;
 
-    [Header("Combat")]
-    public GameObject projectile;
+    [Header("Attack")]
+    public float attackRange = 1.5f;
+    public float attackAngle = 60f;   // degrees of arc in front of player
+    public int attackDamage = 1;
+    public float attackCooldown = 0.4f;
+
+    private float attackTimer = 0f;
 
     [Header("State")]
-    public int currentRoom;
-    
     public bool movementLock = false;
     public bool inputLock = false;
 
-    private Rigidbody2D rb;
     public Animator anim;
+
+    private Rigidbody2D rb;
     private Vector2 input;
+    private SpriteRenderer sr;
 
     void Start() {
         rb = GetComponent<Rigidbody2D>();
+        sr = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
+
+        currentHealth = maxHealth;
     }
 
     void Update() {
@@ -39,8 +47,12 @@ public class PlayerController : MonoBehaviour {
         UpdateAnimation();
         UpdateUI();
 
-        if (Input.GetKeyDown(KeyCode.F))
-            Instantiate(projectile, transform.position, Quaternion.identity);
+        attackTimer += Time.deltaTime;
+
+        if (Input.GetMouseButtonDown(0) && attackTimer >= attackCooldown) {
+            Attack();
+            attackTimer = 0f;
+        }
     }
 
     void FixedUpdate() {
@@ -72,13 +84,45 @@ public class PlayerController : MonoBehaviour {
     }
 
     private void UpdateUI() {
-        hpFill.fillAmount = health / maxHealth;
-        hpText.text = $"{health} / {maxHealth}";
+        fill.fillAmount = currentHealth / maxHealth;
+        hpText.text = $"{currentHealth} / {maxHealth}";
     }
 
-    //void OnDrawGizmos() {
-    //    Gizmos.color = Color.yellow;
-    //    Gizmos.DrawWireSphere(Vector3.zero, 8f);
-    //}
+    private void Attack() {
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 attackDir = (mousePos - transform.position).normalized;
 
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, attackRange);
+
+        HashSet<Enemies> damaged = new HashSet<Enemies>();
+
+        foreach (Collider2D hit in hits) {
+            Enemies enemy = hit.GetComponent<Enemies>();
+            if (enemy == null) continue;
+
+            if (damaged.Contains(enemy)) continue; // prevent double hits
+            damaged.Add(enemy);
+
+            Vector2 toEnemy = (enemy.transform.position - transform.position).normalized;
+            float angle = Vector2.Angle(attackDir, toEnemy);
+
+            if (angle <= attackAngle * 0.5f) {
+                StartCoroutine(enemy.TakeDamage(attackDamage));
+            }
+        }
+    }
+
+    public IEnumerator TakeDamage(int amount) {
+        currentHealth -= amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+        sr.color = new Color32(255, 137, 137, 255);
+        yield return new WaitForSeconds(0.15f);
+        sr.color = new Color32(137, 137, 137, 255);
+    }
+
+    private void OnDrawGizmosSelected() {
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
+    }
 }
