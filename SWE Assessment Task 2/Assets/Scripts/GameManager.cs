@@ -34,17 +34,17 @@ public static class Data {
 
     public static Dictionary<int, ArrayList> obstacles = new Dictionary<int, ArrayList> {
 
-        // Enemies        |  Name             |  Minimum Floor    |  Spawn Weight     |  Damage           |  Flavour Text
-        {0,  new ArrayList {"Goblin",           1,                  1,                  1,                  "I sense !" } },
-        {1,  new ArrayList {"Bat",              1,                  1,                  1,                  "I sense !"} },
+        // Enemies        |  Name             |  Minimum Floor     |  Health           |  Damage          |  Speed             |  Flavour Text
+        {0,  new ArrayList {"Goblin",           1,                  10,                 1,                  2,                  "I sense !" } },
+        {1,  new ArrayList {"Bat",              1,                  12,                 1,                  3,                  "I sense fluttering nearby!"} },
         {2,  new ArrayList {"",                 99} },
         {3,  new ArrayList {"",                 99} },
         {4,  new ArrayList {"",                 99} },
         {5,  new ArrayList {"",                 99} },
 
-        // Bosses         |  Name             |  Minimum Floor    |  Spawn Weight     |  Damage           |  Flavour Text
-        {6,  new ArrayList {"The Wumpus",       1,                  1,                  2,                  "I smell a wumpus!" } },
-        {7,  new ArrayList {"",                 3,                  2,                  99,                 "I smell!" } },
+        // Bosses         |  Name             |  Minimum Floor     |  Health           |  Damage          |  Speed             |  Flavour Text
+        {6,  new ArrayList {"The Wumpus",       1,                  30,                 2,                  1,                  "I smell a wumpus!" } },
+        {7,  new ArrayList {"",                 3,                  2,                  2,                  1,                  "I smell!" } },
         {8,  new ArrayList {"",                 99} },
         {9,  new ArrayList {"",                 99} },
         {10, new ArrayList {"",                 99} },
@@ -138,8 +138,10 @@ public class GameManager : MonoBehaviour {
 
             e.currentRoom = rng.Next(2, 21);
             e.enemyName = Data.obstacles[id][0].ToString();
+            e.maxHealth = int.Parse(Data.obstacles[id][2].ToString());
             e.damage = int.Parse(Data.obstacles[id][3].ToString());
-            e.flavourText = Data.obstacles[id][4].ToString();
+            e.moveSpeed = int.Parse(Data.obstacles[id][4].ToString());
+            e.flavourText = Data.obstacles[id][5].ToString();
 
             enemyObj.name = e.enemyName;
         }

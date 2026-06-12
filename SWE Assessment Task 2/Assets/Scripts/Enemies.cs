@@ -72,7 +72,7 @@ public class Enemies : MonoBehaviour {
     void FixedUpdate() {
         visible = (gManager.currentRoom == currentRoom);
 
-        if (visible) {
+        if (visible && currentHealth > 0) {
             Visible(true);
 
             float distToPlayer = Vector2.Distance(transform.position, player.position);
@@ -145,7 +145,7 @@ public class Enemies : MonoBehaviour {
     }
 
     void Die() {
-        Destroy(gameObject);
+        Visible(false);
     }
 
     public void OnDrawGizmosSelected() {
