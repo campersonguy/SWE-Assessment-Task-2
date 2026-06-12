@@ -8,135 +8,109 @@ using TMPro;
 
 public class Enemies : MonoBehaviour {
 
-    [Header("References")]
+    [Header("importanc")]
     public GameManager gManager;
-    public PlayerController player;
+    public PlayerController playerController;
 
-    [Header("Info")]
     public string enemyName;
     public string flavourText;
-    public int damage = 1;
 
-    [Header("Health")]
-    public float maxHealth = 10f;
-    public float currentHealth;
+    public bool visible;
 
     [Header("Movement")]
     public float moveSpeed = 2f;
     public float changeDirectionTime = 2f;
-    public float aggroRange = 5f;
 
     private Rigidbody2D rb;
+    private BoxCollider2D col;
+    private SpriteRenderer sr;
+
     private Vector2 moveDirection;
     private float directionTimer;
 
-    [Header("Attack")]
-    public float attackRange = 1.2f;
+    [Header("Violence")]
+    public float aggroRange = 5f;       // distance to start chasing
+    public float deaggroRange = 7f;     // distance to stop chasing
+    public float attackRange = 0.5f;    // distance to attack
     public float attackCooldown = 1f;
 
-    private float attackTimer;
+    public int damage = 1;
 
-    [Header("Shooting")]
-    public bool canShoot = false;
+    private bool isAggro = false;
+    private float attackTimer = 0f;
 
-    public GameObject projectilePrefab;
-    public float shootInterval = 9f;
-    public float projectileSpeed = 5f;
-    public int projectileCount = 4;
+    public Transform player;
 
-    private float shootTimer;
+    [Header("Health")]
+    public int maxHealth = 1000;
+    public int currentHealth;
+
+    public GameObject healthBar;
+    public GameObject bar;
+    public Image fill;
+
+    public Vector2 offset;
 
     [Header("Location")]
     public int currentRoom;
-    private Vector2 spawnPosition;
-
-    [Header("Components")]
-    private SpriteRenderer sr;
-    private Collider2D col;
-
-    [Header("Health Bar")]
-    public GameObject healthBarPrefab;
-    private Image healthFill;
-    private Transform healthBar;
-    public Vector3 healthBarOffset = new Vector3(0, 1.2f, 0);
-
 
     void Start() {
         rb = GetComponent<Rigidbody2D>();
-        player = gManager.player;
+        col = GetComponent<BoxCollider2D>();
         sr = GetComponent<SpriteRenderer>();
-        col = GetComponent<Collider2D>();
+
+        PickNewDirection();
 
         currentHealth = maxHealth;
 
-        GameObject hb = Instantiate(healthBarPrefab, transform.position + healthBarOffset, Quaternion.identity);
-        healthBar = hb.transform;
-        healthFill = hb.transform.Find("Fill").GetComponent<Image>();
+        bar = Instantiate(healthBar, transform);
+        bar.transform.localPosition = offset;
 
-        spawnPosition = transform.position; // store original spawn
-        PickNewDirection();
-
-        SetVisible(gManager.currentRoom == currentRoom);
-    }
-
-    void Update() {
-        bool shouldBeVisible = gManager.currentRoom == currentRoom;
-
-        if (sr.enabled != shouldBeVisible) {
-            SetVisible(shouldBeVisible);
-
-            if (!shouldBeVisible)
-                ResetEnemy();
-        }
-
-        // Follow enemy
-        healthBar.position = transform.position + healthBarOffset;
-
-        // Update fill
-        healthFill.fillAmount = currentHealth / maxHealth;
-
-        // Hide when enemy is invisible
-        healthBar.gameObject.SetActive(sr.enabled);
+        fill = bar.transform.Find("Health Bar/Fill").gameObject.GetComponent<Image>();
     }
 
     void FixedUpdate() {
-        if (!sr.enabled)
-            return;
+        visible = (gManager.currentRoom == currentRoom);
 
-        float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
+        if (visible && currentHealth > 0) {
+            Visible(true);
 
-        // Attack if close enough
-        if (distanceToPlayer <= attackRange) {
-            TryAttack();
-            rb.linearVelocity = Vector2.zero; // stop moving while attacking
-            return;
+            float distToPlayer = Vector2.Distance(transform.position, player.position);
+
+            // Aggro logic
+            if (!isAggro && distToPlayer <= aggroRange)
+                isAggro = true;
+
+            if (isAggro && distToPlayer >= deaggroRange)
+                isAggro = false;
+
+            if (isAggro) {
+                ChasePlayer();
+            } else {
+                Wander();
+            }
+
+            attackTimer += Time.fixedDeltaTime;
+            if (isAggro && distToPlayer <= attackRange && attackTimer >= attackCooldown) {
+                AttackPlayer();
+                attackTimer = 0f;
+            }
+        } else {
+            Visible(false);
         }
-
-        // Otherwise move normally
-        if (distanceToPlayer <= aggroRange)
-            AggroMove();
-        else
-            WanderMove();
-
-        HandleShooting();
     }
 
-    // ---------------------------------------------------------
-    // MOVEMENT
-    // ---------------------------------------------------------
-
-    void AggroMove() {
-        Vector2 dir = (player.transform.position - transform.position).normalized;
-        rb.linearVelocity = dir * moveSpeed * 1.5f; // faster when aggro
-    }
-
-    void WanderMove() {
+    void Wander() {
         directionTimer += Time.fixedDeltaTime;
-
         if (directionTimer >= changeDirectionTime)
             PickNewDirection();
 
         rb.linearVelocity = moveDirection * moveSpeed;
+    }
+
+    void ChasePlayer() {
+        Vector2 dir = (player.position - transform.position).normalized;
+        rb.linearVelocity = dir * moveSpeed;
     }
 
     void PickNewDirection() {
@@ -144,87 +118,38 @@ public class Enemies : MonoBehaviour {
         directionTimer = 0f;
     }
 
-    // ---------------------------------------------------------
-    // COMBAT
-    // ---------------------------------------------------------
-
-    void HandleShooting() {
-        if (!canShoot)
-            return;
-
-        shootTimer += Time.fixedDeltaTime;
-
-        if (shootTimer >= shootInterval) {
-            ShootProjectile();
-            shootTimer = 0f;
-        }
+    void AttackPlayer() {
+        StartCoroutine(playerController.TakeDamage(damage));
     }
 
-    void ShootProjectile() {
-        for (int i = 0; i < projectileCount; i++) {
-            GameObject proj = Instantiate(projectilePrefab, transform.position, Quaternion.identity);
-
-            ProjectileController p = proj.GetComponent<ProjectileController>();
-            Vector2 randomDir = UnityEngine.Random.insideUnitCircle.normalized;
-
-            if (p != null)
-                p.SetDirection(randomDir);
-        }
+    void Visible(bool state) {
+        sr.enabled = state;
+        col.enabled = state;
+        bar.SetActive(state);
     }
 
-    void TryAttack() {
-        attackTimer += Time.fixedDeltaTime;
-
-        if (attackTimer >= attackCooldown)
-        {
-            PerformAttack();
-            attackTimer = 0f;
-        }
-    }
-
-    void PerformAttack() {
-        // Deal damage to the player
-        player.health -= damage;
-
-        // Optional: play an animation
-        // anim.SetTrigger("attack");
-
-        // Optional: knockback
-        // Vector2 knockDir = (player.transform.position - transform.position).normalized;
-        // player.rb.AddForce(knockDir * 5f, ForceMode2D.Impulse);
-    }
-
-    public void TakeDamage(float amount) {
+    public IEnumerator TakeDamage(int amount) {
         currentHealth -= amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
-        if (currentHealth <= 0)
+        fill.fillAmount = (float)currentHealth / maxHealth;
+
+        if (currentHealth <= 0) {
             Die();
+            yield break;
+        }
+
+        sr.color = new Color32(255, 137, 137, 255);
+        yield return new WaitForSeconds(0.15f);
+        sr.color = new Color32(137, 137, 137, 255);
     }
 
     void Die() {
-        Destroy(gameObject);
+        Visible(false);
     }
 
-    // ---------------------------------------------------------
-    // RESET
-    // ---------------------------------------------------------
-
-    void ResetEnemy() {
-        rb.linearVelocity = Vector2.zero;
-        transform.position = spawnPosition;
-        PickNewDirection();
-        shootTimer = 0f;
-
-        currentHealth = maxHealth;
-        healthFill.fillAmount = 1f;
-    }
-
-    // ---------------------------------------------------------
-    // VISIBILITY
-    // ---------------------------------------------------------
-
-    void SetVisible(bool state) {
-        sr.enabled = state;
-        col.enabled = state;
+    public void OnDrawGizmosSelected() {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }

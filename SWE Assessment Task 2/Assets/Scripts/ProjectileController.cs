@@ -29,6 +29,6 @@ public class ProjectileController : MonoBehaviour {
 
     void OnTriggerEnter2D(Collider2D other) {
         if (other.gameObject.name == "Player")
-            player.health -= 1;
+            player.currentHealth -= 1;
     }
 }

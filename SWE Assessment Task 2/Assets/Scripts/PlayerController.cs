@@ -8,34 +8,38 @@ using TMPro;
 
 public class PlayerController : MonoBehaviour {
     [Header("Stats")]
-    public float health;
+    public float currentHealth;
     public float maxHealth;
     public float speed;
 
     [Header("UI")]
-    public Image hpFill;
+    public Image fill;
     public TextMeshProUGUI hpText;
 
-    [Header("Melee Attack")]
+    [Header("Attack")]
     public float attackRange = 1.5f;
-    public float attackAngle = 45f;
-    public float attackDamage = 2f;
+    public float attackAngle = 60f;   // degrees of arc in front of player
+    public int attackDamage = 1;
     public float attackCooldown = 0.4f;
 
-    private float attackTimer;
-
+    private float attackTimer = 0f;
 
     [Header("State")]
     public bool movementLock = false;
     public bool inputLock = false;
 
-    private Rigidbody2D rb;
     public Animator anim;
+
+    private Rigidbody2D rb;
     private Vector2 input;
+    private SpriteRenderer sr;
 
     void Start() {
         rb = GetComponent<Rigidbody2D>();
+        sr = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
+
+        currentHealth = maxHealth;
     }
 
     void Update() {
@@ -46,8 +50,8 @@ public class PlayerController : MonoBehaviour {
         attackTimer += Time.deltaTime;
 
         if (Input.GetMouseButtonDown(0) && attackTimer >= attackCooldown) {
+            Attack();
             attackTimer = 0f;
-            PerformAttack();
         }
     }
 
@@ -56,33 +60,6 @@ public class PlayerController : MonoBehaviour {
             rb.linearVelocity = input * speed;
         else
             rb.linearVelocity = Vector2.zero;
-    }
-
-    void PerformAttack() {
-        // Get mouse world position
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        Vector2 attackDir = (mousePos - transform.position).normalized;
-
-        // Find all enemies in range
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, attackRange);
-
-        foreach (Collider2D hit in hits) {
-            Enemies enemy = hit.GetComponent<Enemies>();
-            if (enemy == null) continue;
-
-            // Direction from player to enemy
-            Vector2 toEnemy = (enemy.transform.position - transform.position).normalized;
-
-            // Check if enemy is within attack angle
-            float angle = Vector2.Angle(attackDir, toEnemy);
-
-            if (angle <= attackAngle) {
-                enemy.TakeDamage(attackDamage);
-            }
-        }
-
-        // Optional: play attack animation
-        // anim.SetTrigger("attack");
     }
 
     private void ReadInput() {
@@ -107,26 +84,45 @@ public class PlayerController : MonoBehaviour {
     }
 
     private void UpdateUI() {
-        hpFill.fillAmount = health / maxHealth;
-        hpText.text = $"{health} / {maxHealth}";
+        fill.fillAmount = currentHealth / maxHealth;
+        hpText.text = $"{currentHealth} / {maxHealth}";
     }
 
-    //void OnDrawGizmos() {
-    //    Gizmos.color = Color.yellow;
-    //    Gizmos.DrawWireSphere(Vector3.zero, 6f);
-    //}
-
-    void OnDrawGizmosSelected() {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, attackRange);
-
+    private void Attack() {
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector2 attackDir = (mousePos - transform.position).normalized;
 
-        Vector3 left = Quaternion.Euler(0, 0, attackAngle) * attackDir;
-        Vector3 right = Quaternion.Euler(0, 0, -attackAngle) * attackDir;
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, attackRange);
 
-        Gizmos.DrawLine(transform.position, transform.position + left * attackRange);
-        Gizmos.DrawLine(transform.position, transform.position + right * attackRange);
+        HashSet<Enemies> damaged = new HashSet<Enemies>();
+
+        foreach (Collider2D hit in hits) {
+            Enemies enemy = hit.GetComponent<Enemies>();
+            if (enemy == null) continue;
+
+            if (damaged.Contains(enemy)) continue; // prevent double hits
+            damaged.Add(enemy);
+
+            Vector2 toEnemy = (enemy.transform.position - transform.position).normalized;
+            float angle = Vector2.Angle(attackDir, toEnemy);
+
+            if (angle <= attackAngle * 0.5f) {
+                StartCoroutine(enemy.TakeDamage(attackDamage));
+            }
+        }
+    }
+
+    public IEnumerator TakeDamage(int amount) {
+        currentHealth -= amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+
+        sr.color = new Color32(255, 137, 137, 255);
+        yield return new WaitForSeconds(0.15f);
+        sr.color = new Color32(137, 137, 137, 255);
+    }
+
+    private void OnDrawGizmosSelected() {
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, attackRange);
     }
 }
