@@ -16,6 +16,9 @@ public class PlayerController : MonoBehaviour {
     public Image fill;
     public TextMeshProUGUI hpText;
 
+    public Image attackFill;
+    public GameObject attackBar;
+
     [Header("Attack")]
     public float attackRange = 1.5f;
     public float attackAngle = 60f;   // degrees of arc in front of player
@@ -23,6 +26,28 @@ public class PlayerController : MonoBehaviour {
     public float attackCooldown = 0.4f;
 
     private float attackTimer = 0f;
+
+    [Header("Sword")]
+    public Transform sword;
+    public float radiusX = 1.5f;
+    public float radiusY = 0.8f;
+
+    [Header("Sword Jab")]
+    public float jabDistance = 0.5f;
+    public float jabSpeed = 12f;
+
+    private float jabAmount = 0f;
+    private bool isJabbing = false;
+
+    [Header("Dash")]
+    public float dashSpeed = 12f;
+    public float dashDuration = 0.15f;
+    public float dashCooldown = 1f;
+
+    private bool isDashing = false;
+    private float dashTimer = 0f;
+    private float dashCooldownTimer = 0f;
+    private Vector2 dashDirection;
 
     [Header("State")]
     public bool movementLock = false;
@@ -53,9 +78,30 @@ public class PlayerController : MonoBehaviour {
             Attack();
             attackTimer = 0f;
         }
+
+        dashCooldownTimer += Time.deltaTime;
+
+        if (Input.GetKeyDown(KeyCode.Space) && dashCooldownTimer >= dashCooldown) {
+            TryDash();
+        }
+
+        UpdateSwordPositionOval();
     }
 
     void FixedUpdate() {
+        if (isDashing) {
+            rb.linearVelocity = dashDirection * dashSpeed;
+
+            dashTimer -= Time.fixedDeltaTime;
+            if (dashTimer <= 0f) {
+                isDashing = false;
+                movementLock = false;
+            }
+
+            return;
+        }
+
+        // Normal movement
         if (!movementLock)
             rb.linearVelocity = input * speed;
         else
@@ -86,6 +132,12 @@ public class PlayerController : MonoBehaviour {
     private void UpdateUI() {
         fill.fillAmount = currentHealth / maxHealth;
         hpText.text = $"{currentHealth} / {maxHealth}";
+
+        attackFill.fillAmount = attackTimer / attackCooldown;
+        if (attackFill.fillAmount >= 1f)
+            attackBar.SetActive(false);
+        else
+            attackBar.SetActive(true);
     }
 
     private void Attack() {
@@ -110,6 +162,8 @@ public class PlayerController : MonoBehaviour {
                 StartCoroutine(enemy.TakeDamage(attackDamage));
             }
         }
+
+        StartJab();
     }
 
     public IEnumerator TakeDamage(int amount) {
@@ -119,6 +173,58 @@ public class PlayerController : MonoBehaviour {
         sr.color = new Color32(255, 137, 137, 255);
         yield return new WaitForSeconds(0.15f);
         sr.color = new Color32(137, 137, 137, 255);
+    }
+
+    void UpdateSwordPositionOval() {
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 dir = mousePos - transform.position;
+        float angle = Mathf.Atan2(dir.y, dir.x);
+
+        // Base oval position
+        float x = Mathf.Cos(angle) * radiusX;
+        float y = Mathf.Sin(angle) * radiusY;
+
+        Vector3 basePos = new Vector3(x, y, 0f);
+
+        // Apply jab offset (push outward along the direction)
+        Vector3 jabOffset = new Vector3(
+            Mathf.Cos(angle) * jabAmount,
+            Mathf.Sin(angle) * jabAmount,
+            0f
+        );
+
+        sword.localPosition = basePos + jabOffset;
+
+        // Rotate sword to face the mouse
+        sword.localRotation = Quaternion.Euler(0, 0, angle * Mathf.Rad2Deg);
+
+        // Animate jab retract
+        if (isJabbing)
+        {
+            jabAmount = Mathf.MoveTowards(jabAmount, 0f, jabSpeed * Time.deltaTime);
+
+            if (jabAmount <= 0f)
+                isJabbing = false;
+        }
+    }
+
+    void StartJab() {
+        isJabbing = true;
+        jabAmount = jabDistance;
+    }
+
+    void TryDash() {
+        // Can't dash without movement direction
+        if (input == Vector2.zero)
+            return;
+
+        isDashing = true;
+        dashTimer = dashDuration;
+        dashCooldownTimer = 0f;
+
+        dashDirection = input.normalized;
+
+        movementLock = true; // prevent normal movement during dash
     }
 
     private void OnDrawGizmosSelected() {

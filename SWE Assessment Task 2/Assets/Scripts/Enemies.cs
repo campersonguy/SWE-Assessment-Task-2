@@ -8,10 +8,13 @@ using TMPro;
 
 public class Enemies : MonoBehaviour {
 
-    [Header("importanc")]
+    [Header("References")]
     public GameManager gManager;
     public PlayerController playerController;
 
+    public GameObject damageEffect;
+
+    [Header("Information")]
     public string enemyName;
     public string flavourText;
 
@@ -66,7 +69,7 @@ public class Enemies : MonoBehaviour {
         bar = Instantiate(healthBar, transform);
         bar.transform.localPosition = offset;
 
-        fill = bar.transform.Find("Health Bar/Fill").gameObject.GetComponent<Image>();
+        fill = bar.transform.Find("Fill").gameObject.GetComponent<Image>();
     }
 
     void FixedUpdate() {
@@ -133,6 +136,8 @@ public class Enemies : MonoBehaviour {
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
         fill.fillAmount = (float)currentHealth / maxHealth;
+
+        Instantiate(damageEffect, transform.position, Quaternion.identity);
 
         if (currentHealth <= 0) {
             Die();

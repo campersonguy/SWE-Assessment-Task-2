@@ -35,15 +35,15 @@ public static class Data {
     public static Dictionary<int, ArrayList> obstacles = new Dictionary<int, ArrayList> {
 
         // Enemies        |  Name             |  Minimum Floor     |  Health           |  Damage          |  Speed             |  Flavour Text
-        {0,  new ArrayList {"Goblin",           1,                  10,                 1,                  2,                  "I sense !" } },
-        {1,  new ArrayList {"Bat",              1,                  12,                 1,                  3,                  "I sense fluttering nearby!"} },
+        {0,  new ArrayList {"Slime",            1,                  20,                 1,                  2,                  "I sense !" } },
+        {1,  new ArrayList {"Bat",              1,                  25,                 1,                  3,                  "I sense fluttering nearby!"} },
         {2,  new ArrayList {"",                 99} },
         {3,  new ArrayList {"",                 99} },
         {4,  new ArrayList {"",                 99} },
         {5,  new ArrayList {"",                 99} },
 
         // Bosses         |  Name             |  Minimum Floor     |  Health           |  Damage          |  Speed             |  Flavour Text
-        {6,  new ArrayList {"The Wumpus",       1,                  30,                 2,                  1,                  "I smell a wumpus!" } },
+        {6,  new ArrayList {"The Wumpus",       1,                  60,                 2,                  1,                  "I smell a wumpus!" } },
         {7,  new ArrayList {"",                 3,                  2,                  2,                  1,                  "I smell!" } },
         {8,  new ArrayList {"",                 99} },
         {9,  new ArrayList {"",                 99} },
@@ -75,12 +75,22 @@ public static class Data {
 }
 
 
+[System.Serializable] public class EnemyGroup {
+    public int roomID;
+    public int enemyCount;
+    public List<int> enemyIDs = new List<int>();
+    public List<Vector2> spawnOffsets = new List<Vector2>();
+}
+
+
 public class GameManager : MonoBehaviour {
 
     [Header("References")]
     public PlayerController player;
     public GameObject baseEnemy;
     public GameObject[] obstacles;
+
+    public Sprite[] enemySprites;
 
     [Header("UI")]
     public GameObject notebookUI;
@@ -98,6 +108,8 @@ public class GameManager : MonoBehaviour {
     public Vector2[] cavePositions;
 
     public int currentRoom;
+
+    [Header("Enemy Groups")] public List<EnemyGroup> enemyGroups = new List<EnemyGroup>();
 
     [Header("State")]
     public bool toggleNotes;
@@ -130,20 +142,30 @@ public class GameManager : MonoBehaviour {
     // ---------------------------------------------------------
 
     private void SpawnEnemies() {
-        for (int i = 0; i < 3; i++) {
-            GameObject enemyObj = Instantiate(baseEnemy);
-            Enemies e = enemyObj.GetComponent<Enemies>();
+        GenerateRandomEnemyGroups();
 
-            int id = GetEnemyID(i);
+        foreach (EnemyGroup group in enemyGroups) {
+            for (int i = 0; i < group.enemyCount; i++) {
+                GameObject enemyObj = Instantiate(baseEnemy);
+                Enemies e = enemyObj.GetComponent<Enemies>();
 
-            e.currentRoom = rng.Next(2, 21);
-            e.enemyName = Data.obstacles[id][0].ToString();
-            e.maxHealth = int.Parse(Data.obstacles[id][2].ToString());
-            e.damage = int.Parse(Data.obstacles[id][3].ToString());
-            e.moveSpeed = int.Parse(Data.obstacles[id][4].ToString());
-            e.flavourText = Data.obstacles[id][5].ToString();
+                int id = group.enemyIDs[i];
 
-            enemyObj.name = e.enemyName;
+                if (Data.obstacles[id].Count < 6) {
+                    Debug.LogError($"Enemy ID {id} has incomplete data!");
+                    continue;
+                }
+
+                e.currentRoom = group.roomID;
+                e.enemyName = Data.obstacles[id][0].ToString();
+                e.maxHealth = int.Parse(Data.obstacles[id][2].ToString());
+                e.damage = int.Parse(Data.obstacles[id][3].ToString());
+                e.moveSpeed = int.Parse(Data.obstacles[id][4].ToString());
+                e.flavourText = Data.obstacles[id][5].ToString();
+
+                if (enemySprites[id] != null)
+                    enemyObj.GetComponent<SpriteRenderer>().sprite = enemySprites[id];
+            }
         }
     }
 
@@ -152,8 +174,35 @@ public class GameManager : MonoBehaviour {
         return index switch {
             0 or 1 => rng.Next(0, 2),
             2 => rng.Next(6, 7),
-            _ => rng.Next(2, 21),
+            _ => rng.Next(0, 2),
         };
+    }
+
+    private void GenerateRandomEnemyGroups() {
+        enemyGroups.Clear();
+
+        for (int g = 0; g < 4; g++) {
+            EnemyGroup group = new EnemyGroup();
+
+            // Pick a random room (2–20 like your current system)
+            group.roomID = rng.Next(2, 21);
+
+            // Random number of enemies (2–5)
+            group.enemyCount = rng.Next(3, 7);
+
+            for (int i = 0; i < group.enemyCount; i++) {
+                // Pick a random enemy ID from your Data.obstacles dictionary
+                int id = rng.Next(0, 2); // 0–5 are normal enemies in your data
+                group.enemyIDs.Add(id);
+
+                // Random spawn offset around the room center
+                float x = UnityEngine.Random.Range(-1.5f, 1.5f);
+                float y = UnityEngine.Random.Range(-1.0f, 1.0f);
+                group.spawnOffsets.Add(new Vector2(x, y));
+            }
+
+            enemyGroups.Add(group);
+        }
     }
 
     // ---------------------------------------------------------
@@ -212,7 +261,7 @@ public class GameManager : MonoBehaviour {
         player.inputLock = true;
 
         yield return StartCoroutine(Fade(0f, 1f, 1.5f));
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(2f);
 
         SetUI();
 

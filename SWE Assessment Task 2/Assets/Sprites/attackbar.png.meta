@@ -1,13 +1,10 @@
 fileFormatVersion: 2
-guid: 679f84bc061eb5e489964b9132ee4a9f
+guid: 7c1e122a08138a749b4ccd056bfafe10
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4064473258233914000
-    second: cavehitbox_0
-  - first:
-      213: 7314470430162920591
-    second: cavehitbox_1
+      213: 7981598796800117582
+    second: attackbar_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -103,45 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: cavehitbox_0
+      name: attackbar_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 256
-        height: 256
+        width: 32
+        height: 32
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 07d94eb2b171897c0800000000000000
-      internalID: -4064473258233914000
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: cavehitbox_1
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 42
-        width: 192
-        height: 110
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: f84a5fd3a18328560800000000000000
-      internalID: 7314470430162920591
+      spriteID: e4bc4fe31d554ce60800000000000000
+      internalID: 7981598796800117582
       vertices: []
       indices: 
       edges: []
@@ -150,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5517eec956610db4fbfe6505fb2ca005
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -160,8 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      cavehitbox_0: -4064473258233914000
-      cavehitbox_1: 7314470430162920591
+      attackbar_0: 7981598796800117582
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
