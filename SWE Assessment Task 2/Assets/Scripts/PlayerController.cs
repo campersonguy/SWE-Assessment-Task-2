@@ -7,6 +7,10 @@ using System.Collections.Generic;
 using TMPro;
 
 public class PlayerController : MonoBehaviour {
+
+    [Header("References")]
+    public GameManager gameManager;
+
     [Header("Stats")]
     public float currentHealth;
     public float maxHealth;
@@ -46,7 +50,7 @@ public class PlayerController : MonoBehaviour {
 
     private bool isDashing = false;
     private float dashTimer = 0f;
-    private float dashCooldownTimer = 0f;
+    public float dashCooldownTimer = 0f;
     private Vector2 dashDirection;
 
     [Header("State")]
@@ -74,18 +78,25 @@ public class PlayerController : MonoBehaviour {
 
         attackTimer += Time.deltaTime;
 
-        if (Input.GetMouseButtonDown(0) && attackTimer >= attackCooldown) {
-            Attack();
-            attackTimer = 0f;
-        }
+        if (gameManager.GetEnemyRooms().Contains(gameManager.currentRoom)) {
+            sword.gameObject.SetActive(true);
 
-        dashCooldownTimer += Time.deltaTime;
+            if (Input.GetMouseButtonDown(0) && attackTimer >= attackCooldown) {
+                Attack();
+                attackTimer = 0f;
+            }
+
+            UpdateSwordPositionOval();
+        } else {
+            sword.gameObject.SetActive(false);
+            attackTimer = attackCooldown; // allow immediate attack when entering combat
+        }
 
         if (Input.GetKeyDown(KeyCode.Space) && dashCooldownTimer >= dashCooldown) {
             TryDash();
         }
 
-        UpdateSwordPositionOval();
+        dashCooldownTimer += Time.deltaTime;
     }
 
     void FixedUpdate() {
@@ -199,8 +210,7 @@ public class PlayerController : MonoBehaviour {
         sword.localRotation = Quaternion.Euler(0, 0, angle * Mathf.Rad2Deg);
 
         // Animate jab retract
-        if (isJabbing)
-        {
+        if (isJabbing) {
             jabAmount = Mathf.MoveTowards(jabAmount, 0f, jabSpeed * Time.deltaTime);
 
             if (jabAmount <= 0f)

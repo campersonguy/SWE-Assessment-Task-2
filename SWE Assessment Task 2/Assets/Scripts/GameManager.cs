@@ -83,6 +83,13 @@ public static class Data {
 }
 
 
+[System.Serializable] public class Trap {
+    public int roomID;
+    public int damage;
+    public Vector2 offset;
+}
+
+
 public class GameManager : MonoBehaviour {
 
     [Header("References")]
@@ -95,8 +102,9 @@ public class GameManager : MonoBehaviour {
     [Header("UI")]
     public GameObject notebookUI;
     public GameObject arrowUI;
-    public GameObject uiArea;
+
     public GameObject blackBackground;
+    public GameObject redOverlay;
 
     public TextMeshPro[] arrowText;
     public TextMeshProUGUI roomText;
@@ -111,6 +119,12 @@ public class GameManager : MonoBehaviour {
 
     [Header("Enemy Groups")] public List<EnemyGroup> enemyGroups = new List<EnemyGroup>();
 
+    [Header("Traps")]
+    public GameObject trapPrefab;
+    public List<Trap> traps = new List<Trap>();
+
+    private Coroutine trapDamageRoutine;
+
     [Header("State")]
     public bool toggleNotes;
 
@@ -118,23 +132,29 @@ public class GameManager : MonoBehaviour {
     private Image blackImage;
     private Animator anim;
 
+    [Header("Sprites")]
+    public Sprite normalCave;
+    public Sprite trapCave;
+
     void Start() {
         anim = GetComponent<Animator>();
         blackImage = blackBackground.GetComponent<Image>();
 
         SetUI();
+
         SpawnEnemies();
+        SpawnTraps();
     }
 
     void Update() {
         notebookUI.SetActive(toggleNotes);
         arrowUI.SetActive(!toggleNotes);
 
-        if (Input.GetKeyDown(KeyCode.Tab))
+        if (Input.GetKeyDown(KeyCode.Escape))
             toggleNotes = !toggleNotes;
 
-        if (Input.GetKeyDown(KeyCode.L))
-            StartCoroutine(Dialogue("d"));
+        if (Input.GetKeyDown(KeyCode.Tab))
+            RoomCheck();
     }
 
     // ---------------------------------------------------------
@@ -181,21 +201,27 @@ public class GameManager : MonoBehaviour {
     private void GenerateRandomEnemyGroups() {
         enemyGroups.Clear();
 
+        HashSet<int> usedRooms = new HashSet<int>();
+
         for (int g = 0; g < 4; g++) {
             EnemyGroup group = new EnemyGroup();
 
-            // Pick a random room (2–20 like your current system)
-            group.roomID = rng.Next(2, 21);
+            // Pick a unique room
+            int room;
+            do {
+                room = rng.Next(2, 21); // 2–20
+            } while (usedRooms.Contains(room));
 
-            // Random number of enemies (2–5)
+            usedRooms.Add(room);
+            group.roomID = room;
+
+            // Random number of enemies (3–6)
             group.enemyCount = rng.Next(3, 7);
 
             for (int i = 0; i < group.enemyCount; i++) {
-                // Pick a random enemy ID from your Data.obstacles dictionary
-                int id = rng.Next(0, 2); // 0–5 are normal enemies in your data
+                int id = rng.Next(0, 2); // enemy IDs 0–1
                 group.enemyIDs.Add(id);
 
-                // Random spawn offset around the room center
                 float x = UnityEngine.Random.Range(-1.5f, 1.5f);
                 float y = UnityEngine.Random.Range(-1.0f, 1.0f);
                 group.spawnOffsets.Add(new Vector2(x, y));
@@ -203,15 +229,154 @@ public class GameManager : MonoBehaviour {
 
             enemyGroups.Add(group);
         }
+
+        HashSet<int> enemyRooms = new HashSet<int>();
+
+        foreach (EnemyGroup g in enemyGroups) {
+            enemyRooms.Add(g.roomID);
+        }
+    }
+
+    private void SpawnTraps() {
+        traps.Clear();
+
+        // Collect enemy rooms so traps avoid them
+        HashSet<int> enemyRooms = new HashSet<int>();
+        foreach (EnemyGroup g in enemyGroups)
+            enemyRooms.Add(g.roomID);
+
+        HashSet<int> usedTrapRooms = new HashSet<int>();
+
+        for (int i = 0; i < 2; i++) {
+            Trap t = new Trap();
+
+            int room;
+            do {
+                room = rng.Next(2, 21); // 2–20
+            }
+            while (enemyRooms.Contains(room) || usedTrapRooms.Contains(room));
+
+            usedTrapRooms.Add(room);
+            t.roomID = room;
+
+            t.damage = 2;
+
+            float x = UnityEngine.Random.Range(-0.5f, 0.5f);
+            float y = UnityEngine.Random.Range(-0.5f, 0.5f);
+            t.offset = new Vector2(x, y);
+
+            traps.Add(t);
+
+            GameObject trapObj = Instantiate(trapPrefab);
+        }
     }
 
     // ---------------------------------------------------------
     // PLAYER MOVEMENT
     // ---------------------------------------------------------
 
-    public void MovePlayer(int arrowNum) {
+    public IEnumerator MovePlayer(int arrowNum) {
         currentRoom = Data.rooms[currentRoom][arrowNum];
-        StartCoroutine(FadeTransition(arrowNum));
+        yield return StartCoroutine(FadeTransition(arrowNum));
+
+        yield return StartCoroutine(CheckForTrapDamage());
+    }
+
+    private IEnumerator CheckForTrapDamage() {
+        bool inTrapRoom = false;
+
+        foreach (Trap t in traps) {
+            if (t.roomID == currentRoom) {
+                inTrapRoom = true;
+
+                yield return StartCoroutine(Dialogue($"*beep*\n\nSCANNING...   SCANNING...   SCANNING... \nYOU ARE IN A TRAPPED ROOM! NOXIOUS GAS DETECTED! OH... AND ALSO, SPIKES!\nLEAVE AS SOON AS POSSIBLE! LEAVE AS SOON AS POSSIBLE!\n\n*beep*"));
+
+                // Start DoT if not already running
+                if (trapDamageRoutine == null)
+                    trapDamageRoutine = StartCoroutine(TrapDamageOverTime(t.damage));
+            }
+        }
+
+        // If we left the trap room, stop the DoT
+        if (!inTrapRoom && trapDamageRoutine != null) {
+            StopCoroutine(trapDamageRoutine);
+            trapDamageRoutine = null;
+        }
+    }
+
+    private IEnumerator TrapDamageOverTime(int damage) {
+        int stack = 1;
+
+        while (true) {
+            player.StartCoroutine(player.TakeDamage(damage * stack));
+            stack++;
+            yield return new WaitForSeconds(4f);
+        }
+    }
+
+    // ---------------------------------------------------------
+    // ROOM CHECKS
+    // ---------------------------------------------------------
+
+    private void CheckRoomType() {
+        if (GetTrapRooms().Contains(currentRoom))
+            GetComponent<SpriteRenderer>().sprite = trapCave;
+        else
+            GetComponent<SpriteRenderer>().sprite = normalCave;
+    }
+
+    public List<int> GetEnemyRooms() {
+        List<int> rooms = new List<int>();
+
+        foreach (EnemyGroup g in enemyGroups)
+            rooms.Add(g.roomID);
+
+        return rooms;
+    }
+
+    public List<int> GetTrapRooms() {
+        List<int> rooms = new List<int>();
+
+        foreach (Trap t in traps)
+            rooms.Add(t.roomID);
+
+        return rooms;
+    }
+
+    void RoomCheck() {
+        List<int> enemyRooms = GetEnemyRooms();
+        List<int> trapRooms = GetTrapRooms();
+
+        int enemyCount = 0;
+        int trapCount = 0;
+
+        // Count adjacent enemy rooms
+        foreach (int room in enemyRooms)
+            if (Data.rooms[currentRoom].Contains(room))
+                enemyCount++;
+
+        // Count adjacent trap rooms
+        foreach (int room in trapRooms)
+            if (Data.rooms[currentRoom].Contains(room))
+                trapCount++;
+
+        // Build the message
+        List<string> parts = new List<string>();
+
+        if (enemyCount == 1) parts.Add("AN ENEMY GROUP");
+        else if (enemyCount > 1) parts.Add("ENEMY GROUPS");
+
+        if (trapCount == 1) parts.Add("A TRAP");
+        else if (trapCount > 1) parts.Add("TRAPS");
+
+        string adjacents;
+
+        if (parts.Count == 0)
+            adjacents = "NOTHING";
+        else
+            adjacents = string.Join(" AND ", parts);
+
+        StartCoroutine(Dialogue($"*beep*\n\nSCANNING...   SCANNING...   SCANNING...\n" +$"{adjacents} DETECTED IN ADJACENT ROOMS!\n\n*beep*"));
     }
 
     // ---------------------------------------------------------
@@ -261,12 +426,13 @@ public class GameManager : MonoBehaviour {
         player.inputLock = true;
 
         yield return StartCoroutine(Fade(0f, 1f, 1.5f));
-        yield return new WaitForSeconds(2f);
 
         SetUI();
 
         player.inputLock = false;
         player.transform.position = cavePositions[arrowNum];
+
+        CheckRoomType();
 
         yield return StartCoroutine(Fade(1f, 0f, 1.5f));
 
@@ -295,5 +461,7 @@ public class GameManager : MonoBehaviour {
             arrowText[i].text = $"Room {Data.rooms[currentRoom][i]}";
 
         roomText.text = $"You are in Room {currentRoom}, Floor {Data.floor}";
+
+        redOverlay.SetActive(GetTrapRooms().Contains(currentRoom));
     }
 }
