@@ -32,31 +32,22 @@ public static class Data {
         {20, new List<int> { 18, 19, 6 } },
     };
 
-    public static Dictionary<int, ArrayList> obstacles = new Dictionary<int, ArrayList> {
+    public static Dictionary<int, List<float>> obstacles = new Dictionary<int, List<float>> {  //                   |
 
-        // Enemies        |  Name             |  Minimum Floor     |  Health           |  Damage          |  Speed             |  Flavour Text
-        {0,  new ArrayList {"Slime",            1,                  20,                 1,                  2,                  "I sense !" } },
-        {1,  new ArrayList {"Bat",              1,                  25,                 1,                  3,                  "I sense fluttering nearby!"} },
-        {2,  new ArrayList {"",                 99} },
-        {3,  new ArrayList {"",                 99} },
-        {4,  new ArrayList {"",                 99} },
-        {5,  new ArrayList {"",                 99} },
+        // Enemies           |  Health           |  Damage           |  Attack Speed     |  Attack Range     |  Speed
+        {1,   new List<float> { 30,                 1,                  1,                  1.1f,               2 } },  // Slime
+        {2,   new List<float> { 25,                 1,                  0.8f,               1.4f,               3 } },  // Bat
+        {3,   new List<float> {} },
+        {4,   new List<float> {} },
+        {5,   new List<float> {} },
+        {6,   new List<float> {} },
 
-        // Bosses         |  Name             |  Minimum Floor     |  Health           |  Damage          |  Speed             |  Flavour Text
-        {6,  new ArrayList {"The Wumpus",       1,                  60,                 2,                  1,                  "I smell a wumpus!" } },
-        {7,  new ArrayList {"",                 3,                  2,                  2,                  1,                  "I smell!" } },
-        {8,  new ArrayList {"",                 99} },
-        {9,  new ArrayList {"",                 99} },
-        {10, new ArrayList {"",                 99} },
-        {11, new ArrayList {"",                 99} },
-
-        // Hazards         |  Name             |  Minimum Floor    |  Spawn Weight     |  Damage           |  Flavour Text
-        {12, new ArrayList {"Bottomless Pit",   1,                  1,                  99,                 "I feel a draft!" } },
-        {13, new ArrayList {"Superbats",        1,                  1,                  99,                 "I feel fluttering nearby!"} },
-        {14, new ArrayList {"",                 99   } },
-        {15, new ArrayList {"",                 99} },
-        {16, new ArrayList {"",                 99} },
-        {17, new ArrayList {"",                 99} },
+        // Bosses             |  Health           |  Damage           |  Attack Speed     |  Attack Range     |  Speed
+        {-1,   new List<float> { 60,                 2,                  1.5f,               2.5f,               3 } },  // The Wumpus
+        {-2,   new List<float> {} },
+        {-3,   new List<float> {} },
+        {-4,   new List<float> {} },
+        {-5,   new List<float> {} },
     };
 
     public static Dictionary<int, string> damageText = new Dictionary<int, string> {
@@ -67,8 +58,6 @@ public static class Data {
         {12, "You fell into a bottomless pit! You took all of the damage.\nYou died! HAHHAHAAH LOSER"},
         {13, "You were carried away by Superbats! You suck IDIOT"},
     };
-
-    public static int floor = 1;
 
     public static List<int> enemies = new List<int> {};
     public static List<int> enemyLocations = new List<int> {};
@@ -92,22 +81,27 @@ public static class Data {
 
 public class GameManager : MonoBehaviour {
 
+    public static GameManager Instance { get; private set; }
+
     [Header("References")]
     public PlayerController player;
     public GameObject baseEnemy;
+    public GameObject baseBoss;
     public GameObject[] obstacles;
 
     public Sprite[] enemySprites;
 
     [Header("UI")]
-    public GameObject notebookUI;
+    public GameObject map;
     public GameObject arrowUI;
 
     public GameObject blackBackground;
     public GameObject redOverlay;
 
     public TextMeshPro[] arrowText;
+
     public TextMeshProUGUI roomText;
+    public TextMeshProUGUI clearText;
 
     public Image dialogueBox;
     public TextMeshProUGUI dialogueText;
@@ -116,8 +110,13 @@ public class GameManager : MonoBehaviour {
     public Vector2[] cavePositions;
 
     public int currentRoom;
+    [SerializeField] private int currentFloor;
 
-    [Header("Enemy Groups")] public List<EnemyGroup> enemyGroups = new List<EnemyGroup>();
+    [Header("Enemy Groups")]
+    public List<EnemyGroup> enemyGroups = new List<EnemyGroup>();
+
+    private Dictionary<int, int> groupEnemyCounts = new Dictionary<int, int>();
+    private HashSet<int> clearedGroups = new HashSet<int>();
 
     [Header("Traps")]
     public GameObject trapPrefab;
@@ -126,7 +125,7 @@ public class GameManager : MonoBehaviour {
     private Coroutine trapDamageRoutine;
 
     [Header("State")]
-    public bool toggleNotes;
+    public bool toggleMap;
 
     private System.Random rng = new System.Random();
     private Image blackImage;
@@ -136,25 +135,37 @@ public class GameManager : MonoBehaviour {
     public Sprite normalCave;
     public Sprite trapCave;
 
+    private void Awake() {
+        if (Instance != null && Instance != this) {
+            Destroy(gameObject);
+            return;
+        }
+
+        Instance = this;
+    }
+
     void Start() {
         anim = GetComponent<Animator>();
         blackImage = blackBackground.GetComponent<Image>();
 
-        SetUI();
-
         SpawnEnemies();
         SpawnTraps();
+        SpawnBoss();
+
+        blackBackground.SetActive(true);
+        StartCoroutine(Fade(1f, 0f, 5f));
     }
 
     void Update() {
-        notebookUI.SetActive(toggleNotes);
-        arrowUI.SetActive(!toggleNotes);
+        map.SetActive(toggleMap);
 
-        if (Input.GetKeyDown(KeyCode.Escape))
-            toggleNotes = !toggleNotes;
+        if (Input.GetKeyDown(KeyCode.M))
+            toggleMap = !toggleMap;
 
         if (Input.GetKeyDown(KeyCode.Tab))
             RoomCheck();
+
+        SetUI();
     }
 
     // ---------------------------------------------------------
@@ -171,31 +182,30 @@ public class GameManager : MonoBehaviour {
 
                 int id = group.enemyIDs[i];
 
-                if (Data.obstacles[id].Count < 6) {
+                if (Data.obstacles[id].Count < 5) {
                     Debug.LogError($"Enemy ID {id} has incomplete data!");
                     continue;
                 }
 
                 e.currentRoom = group.roomID;
-                e.enemyName = Data.obstacles[id][0].ToString();
-                e.maxHealth = int.Parse(Data.obstacles[id][2].ToString());
-                e.damage = int.Parse(Data.obstacles[id][3].ToString());
-                e.moveSpeed = int.Parse(Data.obstacles[id][4].ToString());
-                e.flavourText = Data.obstacles[id][5].ToString();
 
-                if (enemySprites[id] != null)
-                    enemyObj.GetComponent<SpriteRenderer>().sprite = enemySprites[id];
+                e.maxHealth = Data.obstacles[id][0];
+                e.damage = Data.obstacles[id][1];
+                e.attackCooldown = Data.obstacles[id][2];
+                e.attackRange = Data.obstacles[id][3];
+                e.moveSpeed = Data.obstacles[id][4];
+
+                e.groupID = group.roomID;
+
+                if (enemySprites[id - 1] != null)
+                    enemyObj.GetComponent<SpriteRenderer>().sprite = enemySprites[id - 1];
+
+                if (!groupEnemyCounts.ContainsKey(group.roomID))
+                    groupEnemyCounts[group.roomID] = 0;
+
+                groupEnemyCounts[group.roomID]++;
             }
         }
-    }
-
-    private int GetEnemyID(int index) {
-        // Your special-case logic preserved
-        return index switch {
-            0 or 1 => rng.Next(0, 2),
-            2 => rng.Next(6, 7),
-            _ => rng.Next(0, 2),
-        };
     }
 
     private void GenerateRandomEnemyGroups() {
@@ -219,7 +229,7 @@ public class GameManager : MonoBehaviour {
             group.enemyCount = rng.Next(3, 7);
 
             for (int i = 0; i < group.enemyCount; i++) {
-                int id = rng.Next(0, 2); // enemy IDs 0–1
+                int id = rng.Next(1, 2 + currentFloor); // enemy IDs 1–2
                 group.enemyIDs.Add(id);
 
                 float x = UnityEngine.Random.Range(-1.5f, 1.5f);
@@ -271,12 +281,61 @@ public class GameManager : MonoBehaviour {
         }
     }
 
+    private void SpawnBoss() {
+        List<int> occupied = GetEnemyRooms();
+        occupied.AddRange(GetTrapRooms());
+
+        int bossRoom;
+        do {
+            bossRoom = rng.Next(2, 21); // 2–20
+        }
+        while (occupied.Contains(bossRoom));
+
+        // Spawn boss
+        GameObject bossObj = Instantiate(baseBoss);
+        Enemies boss = bossObj.GetComponent<Enemies>();
+
+        int id = rng.Next(-currentFloor, 0);
+
+        boss.currentRoom = bossRoom;
+
+        boss.maxHealth = Data.obstacles[id][0];
+        boss.damage = Data.obstacles[id][1];
+        boss.attackCooldown = Data.obstacles[id][2];
+        boss.attackRange = Data.obstacles[id][3];
+        boss.moveSpeed = Data.obstacles[id][4];
+
+        // Position boss at room center
+        bossObj.transform.position = new Vector2(0, 0);
+
+        enemyGroups.Add(new EnemyGroup {
+            roomID = bossRoom,
+            enemyCount = 1,
+            enemyIDs = new List<int>() { -1 } // or any special ID you want
+        });
+    }
+
+    public void OnEnemyKilled(Enemies enemy) {
+        int group = enemy.groupID;
+
+        groupEnemyCounts[group]--;
+
+        // If group already cleared, do nothing
+        if (clearedGroups.Contains(group))
+            return;
+
+        // If this was the last enemy in the group
+        if (groupEnemyCounts[group] <= 0) {
+            clearedGroups.Add(group);
+            // Debug.Log($"Group {group} cleared! Total cleared: {clearedGroups.Count}");
+        }
+    }
+
     // ---------------------------------------------------------
     // PLAYER MOVEMENT
     // ---------------------------------------------------------
 
     public IEnumerator MovePlayer(int arrowNum) {
-        currentRoom = Data.rooms[currentRoom][arrowNum];
         yield return StartCoroutine(FadeTransition(arrowNum));
 
         yield return StartCoroutine(CheckForTrapDamage());
@@ -302,6 +361,8 @@ public class GameManager : MonoBehaviour {
             StopCoroutine(trapDamageRoutine);
             trapDamageRoutine = null;
         }
+
+        player.movementLock = false;
     }
 
     private IEnumerator TrapDamageOverTime(int damage) {
@@ -392,7 +453,7 @@ public class GameManager : MonoBehaviour {
         yield return StartCoroutine(TypeWrite(dialogueText, text));
 
         player.anim.SetTrigger("stopListen");
-        yield return new WaitForSeconds(2.8f);
+        yield return new WaitForSeconds(3f);
 
         player.movementLock = false;
     }
@@ -430,6 +491,9 @@ public class GameManager : MonoBehaviour {
         SetUI();
 
         player.inputLock = false;
+        player.movementLock = true;
+
+        currentRoom = Data.rooms[currentRoom][arrowNum];
         player.transform.position = cavePositions[arrowNum];
 
         CheckRoomType();
@@ -441,6 +505,8 @@ public class GameManager : MonoBehaviour {
 
     IEnumerator Fade(float start, float end, float duration) {
         float t = 0f;
+
+        blackImage.color = new Color(0, 0, 0, start);
 
         while (t < duration) {
             float a = Mathf.Lerp(start, end, t / duration);
@@ -460,7 +526,8 @@ public class GameManager : MonoBehaviour {
         for (int i = 0; i < 3; i++)
             arrowText[i].text = $"Room {Data.rooms[currentRoom][i]}";
 
-        roomText.text = $"You are in Room {currentRoom}, Floor {Data.floor}";
+        roomText.text = $"You are currently in Floor {currentFloor}";
+        clearText.text = $"{clearedGroups.Count} / 4";
 
         redOverlay.SetActive(GetTrapRooms().Contains(currentRoom));
     }

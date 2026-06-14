@@ -127,7 +127,7 @@ public class PlayerController : MonoBehaviour {
     }
 
     private void UpdateAnimation() {
-        if (input == Vector2.zero) {
+        if (input == Vector2.zero || movementLock == true) {
             anim.SetInteger("walkDir", 0);
             return;
         }
@@ -177,7 +177,7 @@ public class PlayerController : MonoBehaviour {
         StartJab();
     }
 
-    public IEnumerator TakeDamage(int amount) {
+    public IEnumerator TakeDamage(float amount) {
         currentHealth -= amount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
@@ -225,7 +225,7 @@ public class PlayerController : MonoBehaviour {
 
     void TryDash() {
         // Can't dash without movement direction
-        if (input == Vector2.zero)
+        if (input == Vector2.zero || movementLock == true || inputLock == true)
             return;
 
         isDashing = true;

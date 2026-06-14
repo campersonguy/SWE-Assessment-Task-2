@@ -18,6 +18,13 @@ public class TitleManager : MonoBehaviour {
     public TextMeshProUGUI button1Text;
     public TextMeshProUGUI button2Text;
 
+    [Header("Slides")]
+    public Sprite[] slides;
+
+    public GameObject slideImages;
+
+    [SerializeField] private int pageNumber;
+
 
     void Start() {
         logoImage.color = new Color(0, 0, 0, 1);
@@ -28,7 +35,14 @@ public class TitleManager : MonoBehaviour {
         button1Text.enabled = false;
         button2Text.enabled = false;
 
+        slideImages.SetActive(false);
+
         StartCoroutine(FadeLogos());
+    }
+
+    void Update() {
+        if (pageNumber >= 0 && pageNumber < slides.Length && slides[pageNumber] != null)
+            slideImages.GetComponent<Image>().sprite = slides[pageNumber];
     }
 
     IEnumerator FadeLogos() {
@@ -71,5 +85,20 @@ public class TitleManager : MonoBehaviour {
         yield return new WaitForSeconds(0.2f);
 
         UnityEngine.SceneManagement.SceneManager.LoadScene("Cave");
+    }
+
+    public void Tutorial() {
+        pageNumber = 0;
+        slideImages.SetActive(true);
+    }
+
+    public void ChangeSlide(int val) {
+        pageNumber += val;
+        pageNumber = Mathf.Clamp(pageNumber, 0, slides.Length);
+
+        if (pageNumber == slides.Length) {
+            slideImages.SetActive(false);
+            return;
+        }
     }
 }

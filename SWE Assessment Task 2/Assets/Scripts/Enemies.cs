@@ -16,7 +16,8 @@ public class Enemies : MonoBehaviour {
 
     [Header("Information")]
     public string enemyName;
-    public string flavourText;
+
+    public int groupID;
 
     public bool visible;
 
@@ -25,7 +26,7 @@ public class Enemies : MonoBehaviour {
     public float changeDirectionTime = 2f;
 
     private Rigidbody2D rb;
-    private BoxCollider2D col;
+    private PolygonCollider2D col;
     private SpriteRenderer sr;
 
     private Vector2 moveDirection;
@@ -37,7 +38,7 @@ public class Enemies : MonoBehaviour {
     public float attackRange = 0.5f;    // distance to attack
     public float attackCooldown = 1f;
 
-    public int damage = 1;
+    public float damage = 1;
 
     private bool isAggro = false;
     private float attackTimer = 0f;
@@ -45,8 +46,8 @@ public class Enemies : MonoBehaviour {
     public Transform player;
 
     [Header("Health")]
-    public int maxHealth = 1000;
-    public int currentHealth;
+    public float maxHealth;
+    public float currentHealth;
 
     public GameObject healthBar;
     public GameObject bar;
@@ -59,7 +60,7 @@ public class Enemies : MonoBehaviour {
 
     void Start() {
         rb = GetComponent<Rigidbody2D>();
-        col = GetComponent<BoxCollider2D>();
+        col = GetComponent<PolygonCollider2D>();
         sr = GetComponent<SpriteRenderer>();
 
         PickNewDirection();
@@ -127,29 +128,31 @@ public class Enemies : MonoBehaviour {
 
     void Visible(bool state) {
         sr.enabled = state;
-        col.enabled = state;
         bar.SetActive(state);
     }
 
     public IEnumerator TakeDamage(int amount) {
-        currentHealth -= amount;
-        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        if (visible) {
+            currentHealth -= amount;
+            currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
-        fill.fillAmount = (float)currentHealth / maxHealth;
+            fill.fillAmount = (float)currentHealth / maxHealth;
 
-        Instantiate(damageEffect, transform.position, Quaternion.identity);
+            Instantiate(damageEffect, transform.position, Quaternion.identity);
 
-        if (currentHealth <= 0) {
-            Die();
-            yield break;
+            if (currentHealth <= 0) {
+                Die();
+                yield break;
+            }
+
+            sr.color = new Color32(255, 137, 137, 255);
+            yield return new WaitForSeconds(0.15f);
+            sr.color = new Color32(137, 137, 137, 255);
         }
-
-        sr.color = new Color32(255, 137, 137, 255);
-        yield return new WaitForSeconds(0.15f);
-        sr.color = new Color32(137, 137, 137, 255);
     }
 
-    void Die() {
+    public void Die() {
+        GameManager.Instance.OnEnemyKilled(this);
         Visible(false);
     }
 
