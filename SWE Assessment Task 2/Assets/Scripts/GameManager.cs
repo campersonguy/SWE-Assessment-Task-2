@@ -106,6 +106,8 @@ public class GameManager : MonoBehaviour {
     public Image dialogueBox;
     public TextMeshProUGUI dialogueText;
 
+    public GameObject deathOverlay;
+
     [Header("World")]
     public Vector2[] cavePositions;
 
@@ -530,5 +532,11 @@ public class GameManager : MonoBehaviour {
         clearText.text = $"{clearedGroups.Count} / 4";
 
         redOverlay.SetActive(GetTrapRooms().Contains(currentRoom));
+    }
+
+    public void Die() {
+        toggleMap = false;
+
+        deathOverlay.SetActive(true);
     }
 }

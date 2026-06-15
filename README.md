@@ -44,14 +44,16 @@
 
 **Wednesday 3/6/26** - During the double, I created a new animation that would play whenever the player listens to dialogue, which would be when they get given warnings of nearby obstacles. It took some time to add it into the animation cycle, but I managed to get it working. I also separated most of my variables and functions from my Game Manager file into the other Player and Obstacle objects to make the OOP more clear. I realised that most of my code was taking place inside one object since I'm very used to coding imperatively.
 
-**Friday 5/6/26** - Dialogue works now 
+**Friday 5/6/26** - Today, I managed to get the dialogue system working, which will be used whenever 
 
 ## Week 8 (A Week) - Focus: Programming, Journaling and Testing and Evaluating
 
 **Monday 8/6/26** - lowkey I got no clue
 **Wednesday 10/6/26** - optimisations, new map, enemies shooting
-**Thursday 11/6/26** - hollow knight lofi (PEAK), made projectiles work
-**Friday 12/6/26**
+**Thursday 11/6/26** - hollow knight lofi (PEAK), made enemies able to attack
+**Friday 12/6/26** - player attacks, better enemy logic, damage flashes
+
+**Weekend 13/6/26 - 14/26/26** - enemy sprites, wumpus sprites, title page + tutorial (those drawings took a while), traps, dashing, better system for room checks, boss subclass, map hitbox, damage particles
 
 ## Week 9 (B Week) - Focus: Final Documentation, Creating Presentations and Testing and Evaluating
 

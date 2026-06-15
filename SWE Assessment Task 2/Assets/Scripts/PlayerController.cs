@@ -181,6 +181,11 @@ public class PlayerController : MonoBehaviour {
         currentHealth -= amount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
+        if (currentHealth <= 0) {
+            gameManager.Die();
+            movementLock = true;
+        }
+
         sr.color = new Color32(255, 137, 137, 255);
         yield return new WaitForSeconds(0.15f);
         sr.color = new Color32(137, 137, 137, 255);
