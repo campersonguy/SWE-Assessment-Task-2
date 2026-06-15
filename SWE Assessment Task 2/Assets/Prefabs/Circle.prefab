@@ -10,9 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 6792658644948765350}
   - component: {fileID: 9122956061669356056}
-  - component: {fileID: 2381536147305097599}
   - component: {fileID: 3125826275101589929}
   - component: {fileID: 5332849209481756659}
+  - component: {fileID: 2462449051246951988}
   m_Layer: 0
   m_Name: Circle
   m_TagString: Untagged
@@ -94,22 +94,6 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &2381536147305097599
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3896905220738634017}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67ca47d2549512c418d383f9e35acbf1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProjectileController
-  player: {fileID: 0}
-  speed: 5
-  lifetime: 15
-  destroySelf: 0
 --- !u!50 &3125826275101589929
 Rigidbody2D:
   serializedVersion: 5
@@ -173,3 +157,19 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.5
+--- !u!114 &2462449051246951988
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3896905220738634017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67ca47d2549512c418d383f9e35acbf1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProjectileController
+  player: {fileID: 0}
+  speed: 5
+  lifetime: 3
+  destroySelf: 1

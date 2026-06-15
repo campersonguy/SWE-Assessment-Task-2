@@ -43,7 +43,7 @@ public static class Data {
         {6,   new List<float> {} },
 
         // Bosses             |  Health           |  Damage           |  Attack Speed     |  Attack Range     |  Speed
-        {-1,   new List<float> { 60,                 2,                  1.5f,               2.5f,               3 } },  // The Wumpus
+        {-1,   new List<float> { 70,                 1,                  1.5f,               2f,                 3 } },  // The Wumpus
         {-2,   new List<float> {} },
         {-3,   new List<float> {} },
         {-4,   new List<float> {} },
@@ -371,7 +371,7 @@ public class GameManager : MonoBehaviour {
         int stack = 1;
 
         while (true) {
-            player.StartCoroutine(player.TakeDamage(damage * stack));
+            player.TakeDamage(damage * stack);
             stack++;
             yield return new WaitForSeconds(4f);
         }

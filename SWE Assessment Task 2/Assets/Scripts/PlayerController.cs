@@ -23,6 +23,9 @@ public class PlayerController : MonoBehaviour {
     public Image attackFill;
     public GameObject attackBar;
 
+    public Image dashFill;
+    public GameObject dashBar;
+
     [Header("Attack")]
     public float attackRange = 1.5f;
     public float attackAngle = 60f;   // degrees of arc in front of player
@@ -120,7 +123,7 @@ public class PlayerController : MonoBehaviour {
     }
 
     private void ReadInput() {
-        if (!inputLock) {
+        if (!inputLock && !movementLock) {
             input.x = Input.GetAxisRaw("Horizontal");
             input.y = Input.GetAxisRaw("Vertical");
         }
@@ -145,10 +148,10 @@ public class PlayerController : MonoBehaviour {
         hpText.text = $"{currentHealth} / {maxHealth}";
 
         attackFill.fillAmount = attackTimer / attackCooldown;
-        if (attackFill.fillAmount >= 1f)
-            attackBar.SetActive(false);
-        else
-            attackBar.SetActive(true);
+        attackBar.SetActive(attackFill.fillAmount < 1f);
+
+        dashFill.fillAmount = dashCooldownTimer / dashCooldown;
+        dashBar.SetActive(dashFill.fillAmount < 1f);
     }
 
     private void Attack() {
@@ -177,7 +180,7 @@ public class PlayerController : MonoBehaviour {
         StartJab();
     }
 
-    public IEnumerator TakeDamage(float amount) {
+    public void TakeDamage(float amount) {
         currentHealth -= amount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
@@ -186,10 +189,14 @@ public class PlayerController : MonoBehaviour {
             movementLock = true;
         }
 
+        StartCoroutine(DamageFlash());
+    }
+
+    IEnumerator DamageFlash() {
         sr.color = new Color32(255, 137, 137, 255);
         yield return new WaitForSeconds(0.15f);
         sr.color = new Color32(137, 137, 137, 255);
-    }
+    }     
 
     void UpdateSwordPositionOval() {
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);

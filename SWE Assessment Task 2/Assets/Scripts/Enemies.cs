@@ -25,9 +25,9 @@ public class Enemies : MonoBehaviour {
     public float moveSpeed = 2f;
     public float changeDirectionTime = 2f;
 
-    private Rigidbody2D rb;
+    public Rigidbody2D rb;
     private PolygonCollider2D col;
-    private SpriteRenderer sr;
+    public SpriteRenderer sr;
 
     private Vector2 moveDirection;
     private float directionTimer;
@@ -42,6 +42,8 @@ public class Enemies : MonoBehaviour {
 
     private bool isAggro = false;
     private float attackTimer = 0f;
+
+    public bool isCharging = false;
 
     public Transform player;
 
@@ -58,7 +60,7 @@ public class Enemies : MonoBehaviour {
     [Header("Location")]
     public int currentRoom;
 
-    void Start() {
+    protected virtual void Start() {
         rb = GetComponent<Rigidbody2D>();
         col = GetComponent<PolygonCollider2D>();
         sr = GetComponent<SpriteRenderer>();
@@ -73,7 +75,7 @@ public class Enemies : MonoBehaviour {
         fill = bar.transform.Find("Fill").gameObject.GetComponent<Image>();
     }
 
-    void FixedUpdate() {
+    protected virtual void FixedUpdate() {
         visible = (gManager.currentRoom == currentRoom);
 
         if (visible && currentHealth > 0) {
@@ -109,12 +111,15 @@ public class Enemies : MonoBehaviour {
         if (directionTimer >= changeDirectionTime)
             PickNewDirection();
 
-        rb.linearVelocity = moveDirection * moveSpeed;
+        if (!isCharging)
+            rb.linearVelocity = moveDirection * moveSpeed;
     }
 
     void ChasePlayer() {
         Vector2 dir = (player.position - transform.position).normalized;
-        rb.linearVelocity = dir * moveSpeed;
+        
+        if (!isCharging)
+            rb.linearVelocity = dir * moveSpeed;
     }
 
     void PickNewDirection() {
@@ -123,7 +128,7 @@ public class Enemies : MonoBehaviour {
     }
 
     void AttackPlayer() {
-        StartCoroutine(playerController.TakeDamage(damage));
+        playerController.TakeDamage(damage);
     }
 
     void Visible(bool state) {
