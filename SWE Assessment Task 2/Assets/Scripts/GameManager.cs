@@ -5,6 +5,7 @@ using System.Collections;
 using System;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 
 public static class Data {
@@ -37,17 +38,7 @@ public static class Data {
         // Enemies           |  Health           |  Damage           |  Attack Speed     |  Attack Range     |  Speed
         {1,   new List<float> { 30,                 1,                  1,                  1.1f,               2 } },  // Slime
         {2,   new List<float> { 25,                 1,                  0.8f,               1.4f,               3 } },  // Bat
-        {3,   new List<float> {} },
-        {4,   new List<float> {} },
-        {5,   new List<float> {} },
-        {6,   new List<float> {} },
-
-        // Bosses             |  Health           |  Damage           |  Attack Speed     |  Attack Range     |  Speed
-        {-1,   new List<float> { 70,                 1,                  1.5f,               2f,                 3 } },  // The Wumpus
-        {-2,   new List<float> {} },
-        {-3,   new List<float> {} },
-        {-4,   new List<float> {} },
-        {-5,   new List<float> {} },
+        {3,   new List<float> { 160,                1,                  1.5f,               2f,                 3 } },  // The Wumpus
     };
 
     public static Dictionary<int, string> damageText = new Dictionary<int, string> {
@@ -69,6 +60,7 @@ public static class Data {
     public int enemyCount;
     public List<int> enemyIDs = new List<int>();
     public List<Vector2> spawnOffsets = new List<Vector2>();
+    public bool isBossRoom = false;
 }
 
 
@@ -102,6 +94,7 @@ public class GameManager : MonoBehaviour {
 
     public TextMeshProUGUI roomText;
     public TextMeshProUGUI clearText;
+    public TextMeshProUGUI timerText;
 
     public Image dialogueBox;
     public TextMeshProUGUI dialogueText;
@@ -111,14 +104,16 @@ public class GameManager : MonoBehaviour {
     [Header("World")]
     public Vector2[] cavePositions;
 
+    [SerializeField] private float timer;
+
     public int currentRoom;
     [SerializeField] private int currentFloor;
 
     [Header("Enemy Groups")]
     public List<EnemyGroup> enemyGroups = new List<EnemyGroup>();
 
-    private Dictionary<int, int> groupEnemyCounts = new Dictionary<int, int>();
-    private HashSet<int> clearedGroups = new HashSet<int>();
+    [SerializeField] private Dictionary<int, int> groupEnemyCounts = new Dictionary<int, int>();
+    public HashSet<int> clearedGroups = new HashSet<int>();
 
     [Header("Traps")]
     public GameObject trapPrefab;
@@ -152,7 +147,6 @@ public class GameManager : MonoBehaviour {
 
         SpawnEnemies();
         SpawnTraps();
-        SpawnBoss();
 
         blackBackground.SetActive(true);
         StartCoroutine(Fade(1f, 0f, 5f));
@@ -163,11 +157,21 @@ public class GameManager : MonoBehaviour {
 
         if (Input.GetKeyDown(KeyCode.M))
             toggleMap = !toggleMap;
+            
+        if (Input.GetKeyDown(KeyCode.N))
+            End(timer);
 
         if (Input.GetKeyDown(KeyCode.Tab))
             RoomCheck();
 
         SetUI();
+    }
+
+    void FixedUpdate() {
+        timer += Time.fixedDeltaTime;
+
+        if (clearedGroups.Count == 5)
+            End(timer);
     }
 
     // ---------------------------------------------------------
@@ -176,12 +180,15 @@ public class GameManager : MonoBehaviour {
 
     private void SpawnEnemies() {
         GenerateRandomEnemyGroups();
+        SpawnBoss();
 
         foreach (EnemyGroup group in enemyGroups) {
-            for (int i = 0; i < group.enemyCount; i++) {
-                GameObject enemyObj = Instantiate(baseEnemy);
-                Enemies e = enemyObj.GetComponent<Enemies>();
+            // If this is the boss group, register it and skip normal enemy spawning
+            if (group.isBossRoom)
+                continue;
 
+            // Normal enemy spawning
+            for (int i = 0; i < group.enemyCount; i++) {
                 int id = group.enemyIDs[i];
 
                 if (Data.obstacles[id].Count < 5) {
@@ -189,7 +196,11 @@ public class GameManager : MonoBehaviour {
                     continue;
                 }
 
+                GameObject enemyObj = Instantiate(baseEnemy);
+                Enemies e = enemyObj.GetComponent<Enemies>();
+
                 e.currentRoom = group.roomID;
+                e.groupID = group.roomID;
 
                 e.maxHealth = Data.obstacles[id][0];
                 e.damage = Data.obstacles[id][1];
@@ -197,10 +208,7 @@ public class GameManager : MonoBehaviour {
                 e.attackRange = Data.obstacles[id][3];
                 e.moveSpeed = Data.obstacles[id][4];
 
-                e.groupID = group.roomID;
-
-                if (enemySprites[id - 1] != null)
-                    enemyObj.GetComponent<SpriteRenderer>().sprite = enemySprites[id - 1];
+                enemyObj.GetComponent<SpriteRenderer>().sprite = enemySprites[id - 1];
 
                 if (!groupEnemyCounts.ContainsKey(group.roomID))
                     groupEnemyCounts[group.roomID] = 0;
@@ -295,11 +303,14 @@ public class GameManager : MonoBehaviour {
 
         // Spawn boss
         GameObject bossObj = Instantiate(baseBoss);
+        bossObj.SetActive(false);
+
         Enemies boss = bossObj.GetComponent<Enemies>();
 
-        int id = rng.Next(-currentFloor, 0);
+        int id = 3;
 
         boss.currentRoom = bossRoom;
+        boss.groupID = bossRoom;
 
         boss.maxHealth = Data.obstacles[id][0];
         boss.damage = Data.obstacles[id][1];
@@ -307,14 +318,21 @@ public class GameManager : MonoBehaviour {
         boss.attackRange = Data.obstacles[id][3];
         boss.moveSpeed = Data.obstacles[id][4];
 
+        bossObj.SetActive(true);
+
         // Position boss at room center
         bossObj.transform.position = new Vector2(0, 0);
 
         enemyGroups.Add(new EnemyGroup {
             roomID = bossRoom,
             enemyCount = 1,
-            enemyIDs = new List<int>() { -1 } // or any special ID you want
+            enemyIDs = new List<int>() { 3 }, // or any special ID you want
+            isBossRoom = true
         });
+
+        // Register boss group in groupEnemyCounts
+    if (!groupEnemyCounts.ContainsKey(bossRoom))
+        groupEnemyCounts[bossRoom] = 1;
     }
 
     public void OnEnemyKilled(Enemies enemy) {
@@ -529,14 +547,31 @@ public class GameManager : MonoBehaviour {
             arrowText[i].text = $"Room {Data.rooms[currentRoom][i]}";
 
         roomText.text = $"You are currently in Floor {currentFloor}";
-        clearText.text = $"{clearedGroups.Count} / 4";
+        clearText.text = $"Enemy Rooms Cleared: {clearedGroups.Count} / 5";
+        timerText.text = TimeSpan.FromSeconds(Math.Floor(timer)).ToString();
 
         redOverlay.SetActive(GetTrapRooms().Contains(currentRoom));
     }
+
+    // ---------------------------------------------------------
+    // OTHER
+    // ---------------------------------------------------------
 
     public void Die() {
         toggleMap = false;
 
         deathOverlay.SetActive(true);
+    }
+
+    private void End(float timer) {
+        StartCoroutine(Fade(0f, 1f, 1.5f));
+    }
+
+    public void Reset() {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void ReturnToTitle() {
+        SceneManager.LoadScene("Title");
     }
 }

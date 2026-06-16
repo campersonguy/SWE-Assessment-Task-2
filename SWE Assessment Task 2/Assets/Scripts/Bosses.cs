@@ -7,6 +7,10 @@ using System.Collections.Generic;
 using TMPro;
 
 public class Boss : Enemies {
+
+    [Header("Boss Stats")]
+    [SerializeField] private float baseDamage;
+
     [Header("Charge Attack")]
     public float chargeSpeed = 10f;
     public float chargeCooldown = 4f;
@@ -32,35 +36,63 @@ public class Boss : Enemies {
     public int projectileCount = 5;
     private float projectileTimer;
 
-    protected override void Start() {
-        base.Start(); // IMPORTANT
+    [Header("Spawn Delay")]
+    [SerializeField] private float spawnDelay = 5f;
+    [SerializeField] private float spawnTimer = 0f;
+    public bool isSpawning = true;
+
+
+    protected override void Awake() {
+        base.Awake(); // IMPORTANT
+
+        baseDamage = damage;
     }
 
-    protected override void FixedUpdate()
-    {
-        base.FixedUpdate(); // IMPORTANT
+    protected override void Start() {
+        base.Start(); // IMPORTANT
+        spawnTimer = spawnDelay;
+    }
+
+    protected override void FixedUpdate() {
+        base.FixedUpdate();
+
+        // Boss is still in spawn delay
+        if (isSpawning && visible) {
+            spawnTimer -= Time.fixedDeltaTime;
+
+            // Freeze movement
+            rb.linearVelocity = Vector2.zero;
+
+            if (spawnTimer <= 0f)
+                isSpawning = false;
+
+            return; // stop attacks too
+        }
+
+        damage = (int)Math.Floor(baseDamage + (4 - gManager.clearedGroups.Count));
+
+        // Prevent attacks if not in current room
+        if (!visible || currentHealth <= 0) {
+            isSpawning = true;
+            chargeTimer = 8f;
+            return;
+        }
 
         chargeTimer -= Time.fixedDeltaTime;
         shockwaveTimer -= Time.fixedDeltaTime;
         projectileTimer -= Time.fixedDeltaTime;
 
-        if (!visible)
-            return;
-
-        if (chargeTimer <= 0f)
-        {
+        if (chargeTimer <= 0f) {
             ChargeAttack();
             chargeTimer = chargeCooldown;
         }
 
-        if (shockwaveTimer <= 0f)
-        {
+        if (shockwaveTimer <= 0f) {
             ShockwaveAttack();
             shockwaveTimer = shockwaveCooldown;
         }
 
-        if (projectileTimer <= 0f)
-        {
+        if (projectileTimer <= 0f) {
             ProjectileBurst();
             projectileTimer = projectileCooldown;
         }
@@ -107,9 +139,8 @@ public class Boss : Enemies {
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, shockwaveRadius);
 
         foreach (Collider2D hit in hits) {
-            if (hit.CompareTag("Player")) {
-                Debug.Log("Player hit by shockwave");
-            }
+            if (hit.CompareTag("Player"))
+                AttackPlayer();
         }
 
         //Debug.Log("Boss used Shockwave Attack");
@@ -131,6 +162,11 @@ public class Boss : Enemies {
         }
 
         //Debug.Log("Boss used Projectile Burst");
+    }
+
+    protected override void OnDrawGizmosSelected() {
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(transform.position, shockwaveRadius); // shockwave AoE
     }
 }
 

@@ -60,19 +60,22 @@ public class Enemies : MonoBehaviour {
     [Header("Location")]
     public int currentRoom;
 
-    protected virtual void Start() {
+
+    protected virtual void Awake() {
         rb = GetComponent<Rigidbody2D>();
         col = GetComponent<PolygonCollider2D>();
         sr = GetComponent<SpriteRenderer>();
-
-        PickNewDirection();
-
-        currentHealth = maxHealth;
 
         bar = Instantiate(healthBar, transform);
         bar.transform.localPosition = offset;
 
         fill = bar.transform.Find("Fill").gameObject.GetComponent<Image>();
+    }
+
+    protected virtual void Start() {
+        PickNewDirection();
+
+        currentHealth = maxHealth;
     }
 
     protected virtual void FixedUpdate() {
@@ -127,7 +130,7 @@ public class Enemies : MonoBehaviour {
         directionTimer = 0f;
     }
 
-    void AttackPlayer() {
+    protected void AttackPlayer() {
         playerController.TakeDamage(damage);
     }
 
@@ -161,7 +164,7 @@ public class Enemies : MonoBehaviour {
         Visible(false);
     }
 
-    public void OnDrawGizmosSelected() {
+    protected virtual void OnDrawGizmosSelected() {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
     }
