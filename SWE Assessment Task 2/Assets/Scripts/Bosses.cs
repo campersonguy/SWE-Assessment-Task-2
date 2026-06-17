@@ -21,12 +21,12 @@ public class Boss : Enemies {
     public float chargeWindupTime = 0.4f;
     public Color chargeGlowColor = Color.white;
 
-    [Header("Shockwave Attack")]
-    public float shockwaveCooldown = 6f;
-    public float shockwaveRadius = 3f;
-    public int shockwaveDamage = 10;
+    [Header("Stomp Attack")]
+    public float stompCooldown = 6f;
+    public float stompRadius = 3f;
+    public float stompDamage = 10;
 
-    private float shockwaveTimer;
+    private float stompTimer;
 
     [Header("Projectile Attack")]
     public GameObject projectilePrefab;
@@ -79,7 +79,7 @@ public class Boss : Enemies {
         }
 
         chargeTimer -= Time.fixedDeltaTime;
-        shockwaveTimer -= Time.fixedDeltaTime;
+        stompTimer -= Time.fixedDeltaTime;
         projectileTimer -= Time.fixedDeltaTime;
 
         if (chargeTimer <= 0f) {
@@ -87,9 +87,9 @@ public class Boss : Enemies {
             chargeTimer = chargeCooldown;
         }
 
-        if (shockwaveTimer <= 0f) {
-            ShockwaveAttack();
-            shockwaveTimer = shockwaveCooldown;
+        if (stompTimer <= 0f) {
+            stompAttack();
+            stompTimer = stompCooldown;
         }
 
         if (projectileTimer <= 0f) {
@@ -135,15 +135,15 @@ public class Boss : Enemies {
         // Debug.Log("Boss performed CHARGE attack");
     }
 
-    private void ShockwaveAttack() {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, shockwaveRadius);
+    private void stompAttack() {
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, stompRadius);
 
         foreach (Collider2D hit in hits) {
             if (hit.CompareTag("Player"))
                 AttackPlayer();
         }
 
-        //Debug.Log("Boss used Shockwave Attack");
+        //Debug.Log("Boss used stomp Attack");
     }
 
     private void ProjectileBurst() {
@@ -166,7 +166,7 @@ public class Boss : Enemies {
 
     protected override void OnDrawGizmosSelected() {
         Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(transform.position, shockwaveRadius); // shockwave AoE
+        Gizmos.DrawWireSphere(transform.position, stompRadius); // stomp AoE
     }
 }
 

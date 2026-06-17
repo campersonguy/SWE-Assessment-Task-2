@@ -3,7 +3,6 @@ using UnityEngine;
 public class ProjectileController : MonoBehaviour {
     public float speed = 5f;
     public float lifetime = 3f;
-    public bool destroySelf = true;
 
     private Vector2 direction;
     private Rigidbody2D rb;
@@ -14,8 +13,7 @@ public class ProjectileController : MonoBehaviour {
 
         player = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
 
-        if (destroySelf)
-            Destroy(gameObject, lifetime);
+        Destroy(gameObject, lifetime);
     }
 
     void FixedUpdate()

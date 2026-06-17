@@ -1531,9 +1531,13 @@ MonoBehaviour:
   dialogueBox: {fileID: 1579288964}
   dialogueText: {fileID: 1421847593}
   deathOverlay: {fileID: 710144160}
-  caveSpawnPositions: []
+  cavePositions:
+  - {x: -7.99, y: 8.35}
+  - {x: 9.02, y: 8.55}
+  - {x: 0.15, y: -8.37}
   timer: 0
   currentRoom: 1
+  currentFloor: 1
   enemyGroups: []
   trapPrefab: {fileID: 3129273373860068078, guid: 1df37c6ee72e84644bd475db06ac6394, type: 3}
   traps: []
@@ -2105,13 +2109,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
   target: {fileID: 1780963315}
-  smoothSpeed: 0.5
+  smoothSpeed: 1
   minX: -12
   maxX: 12
   minY: -12
   maxY: 12
-  camHalfHeight: 0
-  camHalfWidth: 0
 --- !u!1 &540493431
 GameObject:
   m_ObjectHideFlags: 0
@@ -3653,6 +3655,7 @@ MonoBehaviour:
   gManager: {fileID: 424764379}
   playerController: {fileID: 1780963313}
   damageEffect: {fileID: 6268190195091498794, guid: e0c8b4d3152d60e4ba53a20cbcec33e9, type: 3}
+  enemyName: 
   groupID: 0
   visible: 0
   moveSpeed: 2
@@ -5971,6 +5974,7 @@ MonoBehaviour:
   gManager: {fileID: 424764379}
   playerController: {fileID: 1780963313}
   damageEffect: {fileID: 6268190195091498794, guid: e0c8b4d3152d60e4ba53a20cbcec33e9, type: 3}
+  enemyName: 
   groupID: 0
   visible: 0
   moveSpeed: 2
@@ -5996,9 +6000,9 @@ MonoBehaviour:
   chargeCooldown: 4
   chargeWindupTime: 0.4
   chargeGlowColor: {r: 1, g: 0.5, b: 0.5, a: 1}
-  stompCooldown: 6
-  stompRadius: 3
-  stompDamage: 10
+  shockwaveCooldown: 6
+  shockwaveRadius: 3
+  shockwaveDamage: 10
   projectilePrefab: {fileID: 3896905220738634017, guid: 57b8698fe23473b46a080f9326d2f4d8, type: 3}
   projectileCooldown: 3
   projectileSpeed: 6

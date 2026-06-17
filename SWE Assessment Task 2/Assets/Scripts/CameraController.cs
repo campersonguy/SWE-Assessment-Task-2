@@ -1,15 +1,14 @@
 using UnityEngine;
 
-public class CameraFollow2D : MonoBehaviour
-{
+public class CameraFollow2D : MonoBehaviour {
     public Transform target;
-    public float smoothSpeed = 0.125f;
+    [SerializeField] private float smoothSpeed;
 
     // Boundaries of the map
-    public float minX, maxX, minY, maxY;
+    [SerializeField] private float minX, maxX, minY, maxY;
 
-    private float camHalfHeight;
-    private float camHalfWidth;
+    [SerializeField] private float camHalfHeight;
+    [SerializeField] private float camHalfWidth;
 
     void Start() {
         Camera cam = Camera.main;

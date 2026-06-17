@@ -33,25 +33,13 @@ public static class Data {
         {20, new List<int> { 18, 19, 6 } },
     };
 
-    public static Dictionary<int, List<float>> obstacles = new Dictionary<int, List<float>> {  //                   |
+    public static Dictionary<int, List<float>> enemies = new Dictionary<int, List<float>> {  //                   |
 
         // Enemies           |  Health           |  Damage           |  Attack Speed     |  Attack Range     |  Speed
         {1,   new List<float> { 30,                 1,                  1,                  1.1f,               2 } },  // Slime
         {2,   new List<float> { 25,                 1,                  0.8f,               1.4f,               3 } },  // Bat
         {3,   new List<float> { 160,                1,                  1.5f,               2f,                 3 } },  // The Wumpus
     };
-
-    public static Dictionary<int, string> damageText = new Dictionary<int, string> {
-        {0,  "The Boing bounced into you! You took 1 damage.\nThe Boing bounced away..." },
-        {1,  "" },
-        {6,  "The Wumpus bumped you! You took 4 damage.\nThe Wumpus is on the move..."},
-        {7,  ""},
-        {12, "You fell into a bottomless pit! You took all of the damage.\nYou died! HAHHAHAAH LOSER"},
-        {13, "You were carried away by Superbats! You suck IDIOT"},
-    };
-
-    public static List<int> enemies = new List<int> {};
-    public static List<int> enemyLocations = new List<int> {};
 }
 
 
@@ -67,7 +55,6 @@ public static class Data {
 [System.Serializable] public class Trap {
     public int roomID;
     public int damage;
-    public Vector2 offset;
 }
 
 
@@ -102,12 +89,11 @@ public class GameManager : MonoBehaviour {
     public GameObject deathOverlay;
 
     [Header("World")]
-    public Vector2[] cavePositions;
+    public Vector2[] caveSpawnPositions;
 
     [SerializeField] private float timer;
 
     public int currentRoom;
-    [SerializeField] private int currentFloor;
 
     [Header("Enemy Groups")]
     public List<EnemyGroup> enemyGroups = new List<EnemyGroup>();
@@ -191,7 +177,7 @@ public class GameManager : MonoBehaviour {
             for (int i = 0; i < group.enemyCount; i++) {
                 int id = group.enemyIDs[i];
 
-                if (Data.obstacles[id].Count < 5) {
+                if (Data.enemies[id].Count < 5) {
                     Debug.LogError($"Enemy ID {id} has incomplete data!");
                     continue;
                 }
@@ -202,11 +188,11 @@ public class GameManager : MonoBehaviour {
                 e.currentRoom = group.roomID;
                 e.groupID = group.roomID;
 
-                e.maxHealth = Data.obstacles[id][0];
-                e.damage = Data.obstacles[id][1];
-                e.attackCooldown = Data.obstacles[id][2];
-                e.attackRange = Data.obstacles[id][3];
-                e.moveSpeed = Data.obstacles[id][4];
+                e.maxHealth = Data.enemies[id][0];
+                e.damage = Data.enemies[id][1];
+                e.attackCooldown = Data.enemies[id][2];
+                e.attackRange = Data.enemies[id][3];
+                e.moveSpeed = Data.enemies[id][4];
 
                 enemyObj.GetComponent<SpriteRenderer>().sprite = enemySprites[id - 1];
 
@@ -239,12 +225,8 @@ public class GameManager : MonoBehaviour {
             group.enemyCount = rng.Next(3, 7);
 
             for (int i = 0; i < group.enemyCount; i++) {
-                int id = rng.Next(1, 2 + currentFloor); // enemy IDs 1–2
+                int id = rng.Next(1, 2); // enemy IDs 1–2
                 group.enemyIDs.Add(id);
-
-                float x = UnityEngine.Random.Range(-1.5f, 1.5f);
-                float y = UnityEngine.Random.Range(-1.0f, 1.0f);
-                group.spawnOffsets.Add(new Vector2(x, y));
             }
 
             enemyGroups.Add(group);
@@ -281,10 +263,6 @@ public class GameManager : MonoBehaviour {
 
             t.damage = 2;
 
-            float x = UnityEngine.Random.Range(-0.5f, 0.5f);
-            float y = UnityEngine.Random.Range(-0.5f, 0.5f);
-            t.offset = new Vector2(x, y);
-
             traps.Add(t);
 
             GameObject trapObj = Instantiate(trapPrefab);
@@ -312,11 +290,11 @@ public class GameManager : MonoBehaviour {
         boss.currentRoom = bossRoom;
         boss.groupID = bossRoom;
 
-        boss.maxHealth = Data.obstacles[id][0];
-        boss.damage = Data.obstacles[id][1];
-        boss.attackCooldown = Data.obstacles[id][2];
-        boss.attackRange = Data.obstacles[id][3];
-        boss.moveSpeed = Data.obstacles[id][4];
+        boss.maxHealth = Data.enemies[id][0];
+        boss.damage = Data.enemies[id][1];
+        boss.attackCooldown = Data.enemies[id][2];
+        boss.attackRange = Data.enemies[id][3];
+        boss.moveSpeed = Data.enemies[id][4];
 
         bossObj.SetActive(true);
 
@@ -514,7 +492,7 @@ public class GameManager : MonoBehaviour {
         player.movementLock = true;
 
         currentRoom = Data.rooms[currentRoom][arrowNum];
-        player.transform.position = cavePositions[arrowNum];
+        player.transform.position = caveSpawnPositions[arrowNum];
 
         CheckRoomType();
 
@@ -546,7 +524,6 @@ public class GameManager : MonoBehaviour {
         for (int i = 0; i < 3; i++)
             arrowText[i].text = $"Room {Data.rooms[currentRoom][i]}";
 
-        roomText.text = $"You are currently in Floor {currentFloor}";
         clearText.text = $"Enemy Rooms Cleared: {clearedGroups.Count} / 5";
         timerText.text = TimeSpan.FromSeconds(Math.Floor(timer)).ToString();
 

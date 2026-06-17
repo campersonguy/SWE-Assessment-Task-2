@@ -15,8 +15,6 @@ public class Enemies : MonoBehaviour {
     public GameObject damageEffect;
 
     [Header("Information")]
-    public string enemyName;
-
     public int groupID;
 
     public bool visible;
