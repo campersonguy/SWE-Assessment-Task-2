@@ -12,34 +12,32 @@ public class Boss : Enemies {
     [SerializeField] private float baseDamage;
 
     [Header("Charge Attack")]
-    public float chargeSpeed = 10f;
-    public float chargeCooldown = 4f;
+    [SerializeField] private float chargeSpeed = 10f;
+    [SerializeField] private float chargeCooldown = 4f;
 
-    private float chargeTimer;
+    [SerializeField] private float chargeTimer;
 
     [Header("Charge Telegraph")]
-    public float chargeWindupTime = 0.4f;
-    public Color chargeGlowColor = Color.white;
+    [SerializeField] private float chargeWindupTime = 0.4f;
+    [SerializeField] private Color chargeGlowColor = Color.white;
 
     [Header("Stomp Attack")]
-    public float stompCooldown = 6f;
-    public float stompRadius = 3f;
-    public float stompDamage = 10;
+    [SerializeField] private float stompCooldown = 6f;
+    [SerializeField] private float stompRadius = 3f;
 
-    private float stompTimer;
+    [SerializeField] private float stompTimer;
 
     [Header("Projectile Attack")]
-    public GameObject projectilePrefab;
+    [SerializeField] private GameObject projectilePrefab;
 
-    public float projectileCooldown = 3f;
-    public float projectileSpeed = 6f;
-    public int projectileCount = 5;
-    private float projectileTimer;
+    [SerializeField] private float projectileCooldown = 3f;
+    [SerializeField] private int projectileCount = 5;
+    [SerializeField] private float projectileTimer;
 
     [Header("Spawn Delay")]
     [SerializeField] private float spawnDelay = 5f;
     [SerializeField] private float spawnTimer = 0f;
-    public bool isSpawning = true;
+    [SerializeField] private bool isSpawning = true;
 
 
     protected override void Awake() {
@@ -88,7 +86,7 @@ public class Boss : Enemies {
         }
 
         if (stompTimer <= 0f) {
-            stompAttack();
+            StompAttack();
             stompTimer = stompCooldown;
         }
 
@@ -135,7 +133,7 @@ public class Boss : Enemies {
         // Debug.Log("Boss performed CHARGE attack");
     }
 
-    private void stompAttack() {
+    private void StompAttack() {
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, stompRadius);
 
         foreach (Collider2D hit in hits) {

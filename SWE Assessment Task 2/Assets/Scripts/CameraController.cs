@@ -10,13 +10,13 @@ public class CameraFollow2D : MonoBehaviour {
     [SerializeField] private float camHalfHeight;
     [SerializeField] private float camHalfWidth;
 
-    void Start() {
+    private void Start() {
         Camera cam = Camera.main;
         camHalfHeight = cam.orthographicSize;
         camHalfWidth = camHalfHeight * cam.aspect;
     }
 
-    void LateUpdate() {
+    private void LateUpdate() {
         Vector3 desiredPosition = new Vector3(target.position.x, target.position.y, transform.position.z);
 
         // Clamp camera inside bounds
@@ -28,7 +28,7 @@ public class CameraFollow2D : MonoBehaviour {
         transform.position = smoothedPosition;
     }
 
-    void OnDrawGizmos() {
+    private void OnDrawGizmos() {
         Gizmos.color = Color.green;
         Gizmos.DrawWireCube(
             new Vector3((minX + maxX) / 2f, (minY + maxY) / 2f, 0),

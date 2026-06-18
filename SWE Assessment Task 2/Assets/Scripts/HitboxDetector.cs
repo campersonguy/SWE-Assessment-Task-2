@@ -2,11 +2,11 @@ using UnityEngine;
 
 public class HitboxDetector : MonoBehaviour {
     
-    public int id;
+    [SerializeField] private int id;
 
-    public GameManager gameManager;
+    [SerializeField] private GameManager gameManager;
 
-    void OnTriggerEnter2D(Collider2D other) {
+    private void OnTriggerEnter2D(Collider2D other) {
         if (other.gameObject.name == "Player")
             StartCoroutine(gameManager.MovePlayer(id));
     }

@@ -9,52 +9,52 @@ using TMPro;
 public class PlayerController : MonoBehaviour {
 
     [Header("References")]
-    public GameManager gameManager;
+    [SerializeField] private GameManager gameManager;
 
     [Header("Stats")]
-    public float currentHealth;
-    public float maxHealth;
-    public float speed;
+    [SerializeField] private float currentHealth;
+    [SerializeField] private float maxHealth;
+    [SerializeField] private float speed;
 
     [Header("UI")]
-    public Image fill;
-    public TextMeshProUGUI hpText;
+    [SerializeField] private Image fill;
+    [SerializeField] private TextMeshProUGUI hpText;
 
-    public Image attackFill;
-    public GameObject attackBar;
+    [SerializeField] private Image attackFill;
+    [SerializeField] private GameObject attackBar;
 
-    public Image dashFill;
-    public GameObject dashBar;
+    [SerializeField] private Image dashFill;
+    [SerializeField] private GameObject dashBar;
 
     [Header("Attack")]
-    public float attackRange = 1.5f;
-    public float attackAngle = 60f;   // degrees of arc in front of player
-    public int attackDamage = 1;
-    public float attackCooldown = 0.4f;
+    [SerializeField] private float attackRange = 1.5f;
+    [SerializeField] private float attackAngle = 60f;   // degrees of arc in front of player
+    [SerializeField] private int attackDamage = 1;
+    [SerializeField] private float attackCooldown = 0.4f;
 
-    private float attackTimer = 0f;
+    [SerializeField] private float attackTimer = 0f;
 
     [Header("Sword")]
-    public Transform sword;
-    public float radiusX = 1.5f;
-    public float radiusY = 0.8f;
+    [SerializeField] private Transform sword;
+    [SerializeField] private float radiusX = 1.5f;
+    [SerializeField] private float radiusY = 0.8f;
 
     [Header("Sword Jab")]
-    public float jabDistance = 0.5f;
-    public float jabSpeed = 12f;
+    [SerializeField] private float jabDistance = 0.5f;
+    [SerializeField] private float jabSpeed = 12f;
 
-    private float jabAmount = 0f;
-    private bool isJabbing = false;
+    [SerializeField] private float jabAmount = 0f;
+    [SerializeField] private bool isJabbing = false;
 
     [Header("Dash")]
-    public float dashSpeed = 12f;
-    public float dashDuration = 0.15f;
-    public float dashCooldown = 1f;
+    [SerializeField] private float dashSpeed = 12f;
+    [SerializeField] private float dashDuration = 0.15f;
+    [SerializeField] private float dashCooldown = 1f;
 
-    private bool isDashing = false;
-    private float dashTimer = 0f;
-    public float dashCooldownTimer = 0f;
-    private Vector2 dashDirection;
+    [SerializeField] private bool isDashing = false;
+    [SerializeField] private float dashTimer = 0f;
+    [SerializeField] private float dashCooldownTimer = 0f;
+    [SerializeField] private Vector2 dashDirection;
 
     [Header("State")]
     public bool movementLock = false;
@@ -66,7 +66,7 @@ public class PlayerController : MonoBehaviour {
     private Vector2 input;
     private SpriteRenderer sr;
 
-    void Start() {
+    private void Start() {
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
         anim = GetComponent<Animator>();
@@ -74,7 +74,7 @@ public class PlayerController : MonoBehaviour {
         currentHealth = maxHealth;
     }
 
-    void Update() {
+    private void Update() {
         ReadInput();
         UpdateAnimation();
         UpdateUI();
@@ -102,7 +102,7 @@ public class PlayerController : MonoBehaviour {
         dashCooldownTimer += Time.deltaTime;
     }
 
-    void FixedUpdate() {
+    private void FixedUpdate() {
         if (isDashing) {
             rb.linearVelocity = dashDirection * dashSpeed;
 
@@ -192,13 +192,13 @@ public class PlayerController : MonoBehaviour {
         StartCoroutine(DamageFlash());
     }
 
-    IEnumerator DamageFlash() {
+    private IEnumerator DamageFlash() {
         sr.color = new Color32(255, 137, 137, 255);
         yield return new WaitForSeconds(0.15f);
         sr.color = new Color32(137, 137, 137, 255);
     }     
 
-    void UpdateSwordPositionOval() {
+    private void UpdateSwordPositionOval() {
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector2 dir = mousePos - transform.position;
         float angle = Mathf.Atan2(dir.y, dir.x);
@@ -230,12 +230,12 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
-    void StartJab() {
+    private void StartJab() {
         isJabbing = true;
         jabAmount = jabDistance;
     }
 
-    void TryDash() {
+    private void TryDash() {
         // Can't dash without movement direction
         if (input == Vector2.zero || movementLock == true || inputLock == true)
             return;

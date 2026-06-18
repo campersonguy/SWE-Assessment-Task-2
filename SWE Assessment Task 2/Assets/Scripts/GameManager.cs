@@ -47,7 +47,6 @@ public static class Data {
     public int roomID;
     public int enemyCount;
     public List<int> enemyIDs = new List<int>();
-    public List<Vector2> spawnOffsets = new List<Vector2>();
     public bool isBossRoom = false;
 }
 
@@ -63,60 +62,60 @@ public class GameManager : MonoBehaviour {
     public static GameManager Instance { get; private set; }
 
     [Header("References")]
-    public PlayerController player;
-    public GameObject baseEnemy;
-    public GameObject baseBoss;
-    public GameObject[] obstacles;
+    [SerializeField] private PlayerController player;
+    [SerializeField] private GameObject baseEnemy;
+    [SerializeField] private GameObject baseBoss;
+    [SerializeField] private GameObject[] obstacles;
 
-    public Sprite[] enemySprites;
+    [SerializeField] private Sprite[] enemySprites;
 
     [Header("UI")]
-    public GameObject map;
-    public GameObject arrowUI;
+    [SerializeField] private GameObject map;
+    [SerializeField] private GameObject arrowUI;
 
-    public GameObject blackBackground;
-    public GameObject redOverlay;
+    [SerializeField] private GameObject blackBackground;
+    [SerializeField] private GameObject redOverlay;
 
-    public TextMeshPro[] arrowText;
+    [SerializeField] private TextMeshPro[] arrowText;
 
-    public TextMeshProUGUI roomText;
-    public TextMeshProUGUI clearText;
-    public TextMeshProUGUI timerText;
+    [SerializeField] private TextMeshProUGUI roomText;
+    [SerializeField] private TextMeshProUGUI clearText;
+    [SerializeField] private TextMeshProUGUI timerText;
 
-    public Image dialogueBox;
-    public TextMeshProUGUI dialogueText;
+    [SerializeField] private Image dialogueBox;
+    [SerializeField] private TextMeshProUGUI dialogueText;
 
-    public GameObject deathOverlay;
+    [SerializeField] private GameObject deathOverlay;
 
     [Header("World")]
-    public Vector2[] caveSpawnPositions;
+    [SerializeField] private Vector2[] caveSpawnPositions;
 
     [SerializeField] private float timer;
 
     public int currentRoom;
 
     [Header("Enemy Groups")]
-    public List<EnemyGroup> enemyGroups = new List<EnemyGroup>();
+    [SerializeField] private List<EnemyGroup> enemyGroups = new List<EnemyGroup>();
 
     [SerializeField] private Dictionary<int, int> groupEnemyCounts = new Dictionary<int, int>();
     public HashSet<int> clearedGroups = new HashSet<int>();
 
     [Header("Traps")]
-    public GameObject trapPrefab;
-    public List<Trap> traps = new List<Trap>();
+    [SerializeField] private GameObject trapPrefab;
+    [SerializeField] private List<Trap> traps = new List<Trap>();
 
-    private Coroutine trapDamageRoutine;
+    [SerializeField] private Coroutine trapDamageRoutine;
 
     [Header("State")]
-    public bool toggleMap;
+    [SerializeField] private bool toggleMap;
 
-    private System.Random rng = new System.Random();
-    private Image blackImage;
-    private Animator anim;
+    [SerializeField] private System.Random rng = new System.Random();
+    [SerializeField] private Image blackImage;
+    [SerializeField] private Animator anim;
 
     [Header("Sprites")]
-    public Sprite normalCave;
-    public Sprite trapCave;
+    [SerializeField] private Sprite normalCave;
+    [SerializeField] private Sprite trapCave;
 
     private void Awake() {
         if (Instance != null && Instance != this) {
@@ -127,7 +126,7 @@ public class GameManager : MonoBehaviour {
         Instance = this;
     }
 
-    void Start() {
+    private void Start() {
         anim = GetComponent<Animator>();
         blackImage = blackBackground.GetComponent<Image>();
 
@@ -138,7 +137,7 @@ public class GameManager : MonoBehaviour {
         StartCoroutine(Fade(1f, 0f, 5f));
     }
 
-    void Update() {
+    private void Update() {
         map.SetActive(toggleMap);
 
         if (Input.GetKeyDown(KeyCode.M))
@@ -153,7 +152,7 @@ public class GameManager : MonoBehaviour {
         SetUI();
     }
 
-    void FixedUpdate() {
+    private void FixedUpdate() {
         timer += Time.fixedDeltaTime;
 
         if (clearedGroups.Count == 5)
@@ -225,7 +224,7 @@ public class GameManager : MonoBehaviour {
             group.enemyCount = rng.Next(3, 7);
 
             for (int i = 0; i < group.enemyCount; i++) {
-                int id = rng.Next(1, 2); // enemy IDs 1–2
+                int id = rng.Next(1, 3); // enemy IDs 1–2
                 group.enemyIDs.Add(id);
             }
 
@@ -442,7 +441,7 @@ public class GameManager : MonoBehaviour {
     // DIALOGUE
     // ---------------------------------------------------------
 
-    IEnumerator Dialogue(string text) {
+    private IEnumerator Dialogue(string text) {
         player.movementLock = true;
 
         player.anim.SetTrigger("listen");
@@ -456,7 +455,7 @@ public class GameManager : MonoBehaviour {
         player.movementLock = false;
     }
 
-    IEnumerator TypeWrite(TextMeshProUGUI box, string line) {
+    private IEnumerator TypeWrite(TextMeshProUGUI box, string line) {
         dialogueBox.enabled = true;
         box.enabled = true;
 
@@ -480,7 +479,7 @@ public class GameManager : MonoBehaviour {
     // FADE TRANSITION
     // ---------------------------------------------------------
 
-    IEnumerator FadeTransition(int arrowNum) {
+    private IEnumerator FadeTransition(int arrowNum) {
         blackBackground.SetActive(true);
         player.inputLock = true;
 
@@ -501,7 +500,7 @@ public class GameManager : MonoBehaviour {
         blackBackground.SetActive(false);
     }
 
-    IEnumerator Fade(float start, float end, float duration) {
+    private IEnumerator Fade(float start, float end, float duration) {
         float t = 0f;
 
         blackImage.color = new Color(0, 0, 0, start);

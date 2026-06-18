@@ -1,14 +1,14 @@
 using UnityEngine;
 
 public class ProjectileController : MonoBehaviour {
-    public float speed = 5f;
-    public float lifetime = 3f;
+    [SerializeField] private float speed = 5f;
+    [SerializeField] private float lifetime = 3f;
 
-    private Vector2 direction;
-    private Rigidbody2D rb;
-    private PlayerController player;
+    [SerializeField] private Vector2 direction;
+    [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private PlayerController player;
 
-    void Start() {
+    private void Start() {
         rb = GetComponent<Rigidbody2D>();
 
         player = GameObject.FindWithTag("Player").GetComponent<PlayerController>();
@@ -16,20 +16,16 @@ public class ProjectileController : MonoBehaviour {
         Destroy(gameObject, lifetime);
     }
 
-    void FixedUpdate()
-    {
+    private void FixedUpdate() {
         rb.linearVelocity = direction * speed;
     }
 
-    public void SetDirection(Vector2 dir)
-    {
+    public void SetDirection(Vector2 dir) {
         direction = dir.normalized;
     }
 
-    void OnTriggerEnter2D(Collider2D other)
-    {
-        if (other.CompareTag("Player") && player != null)
-        {
+    private void OnTriggerEnter2D(Collider2D other) {
+        if (other.CompareTag("Player") && player != null) {
             player.TakeDamage(1);   // non‑coroutine wrapper is safest
             Destroy(gameObject);    // kill projectile immediately on hit
         }

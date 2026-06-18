@@ -9,10 +9,10 @@ using TMPro;
 public class Enemies : MonoBehaviour {
 
     [Header("References")]
-    public GameManager gManager;
-    public PlayerController playerController;
+    [SerializeField] protected GameManager gManager;
+    [SerializeField] protected PlayerController playerController;
 
-    public GameObject damageEffect;
+    [SerializeField] private GameObject damageEffect;
 
     [Header("Information")]
     public int groupID;
@@ -21,39 +21,39 @@ public class Enemies : MonoBehaviour {
 
     [Header("Movement")]
     public float moveSpeed = 2f;
-    public float changeDirectionTime = 2f;
+    [SerializeField] private float changeDirectionTime = 2f;
 
-    public Rigidbody2D rb;
-    private PolygonCollider2D col;
-    public SpriteRenderer sr;
+    [SerializeField] protected Rigidbody2D rb;
+    [SerializeField] private PolygonCollider2D col;
+    [SerializeField] protected SpriteRenderer sr;
 
-    private Vector2 moveDirection;
-    private float directionTimer;
+    [SerializeField] private Vector2 moveDirection;
+    [SerializeField] private float directionTimer;
 
     [Header("Violence")]
-    public float aggroRange = 5f;       // distance to start chasing
-    public float deaggroRange = 7f;     // distance to stop chasing
+    [SerializeField] private float aggroRange = 5f;       // distance to start chasing
+    [SerializeField] private float deaggroRange = 7f;     // distance to stop chasing
     public float attackRange = 0.5f;    // distance to attack
     public float attackCooldown = 1f;
 
     public float damage = 1;
 
-    private bool isAggro = false;
-    private float attackTimer = 0f;
+    [SerializeField] private bool isAggro = false;
+    [SerializeField] private float attackTimer = 0f;
 
-    public bool isCharging = false;
+    [SerializeField] protected bool isCharging = false;
 
-    public Transform player;
+    [SerializeField] protected Transform player;
 
     [Header("Health")]
     public float maxHealth;
-    public float currentHealth;
+    [SerializeField] protected float currentHealth;
 
-    public GameObject healthBar;
-    public GameObject bar;
-    public Image fill;
+    [SerializeField] private GameObject healthBar;
+    [SerializeField] private GameObject bar;
+    [SerializeField] private Image fill;
 
-    public Vector2 offset;
+    [SerializeField] private Vector2 offset;
 
     [Header("Location")]
     public int currentRoom;
@@ -107,7 +107,7 @@ public class Enemies : MonoBehaviour {
         }
     }
 
-    void Wander() {
+    private void Wander() {
         directionTimer += Time.fixedDeltaTime;
         if (directionTimer >= changeDirectionTime)
             PickNewDirection();
@@ -116,14 +116,14 @@ public class Enemies : MonoBehaviour {
             rb.linearVelocity = moveDirection * moveSpeed;
     }
 
-    void ChasePlayer() {
+    private void ChasePlayer() {
         Vector2 dir = (player.position - transform.position).normalized;
         
         if (!isCharging)
             rb.linearVelocity = dir * moveSpeed;
     }
 
-    void PickNewDirection() {
+    private void PickNewDirection() {
         moveDirection = UnityEngine.Random.insideUnitCircle.normalized;
         directionTimer = 0f;
     }

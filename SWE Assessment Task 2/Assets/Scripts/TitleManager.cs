@@ -9,24 +9,24 @@ using TMPro;
 public class TitleManager : MonoBehaviour {
     
     [Header("Logo Components")]
-    public Image logoImage;
-    public Image background;
+    [SerializeField] private Image logoImage;
+    [SerializeField] private Image background;
 
-    public Image button1;
-    public Image button2;
+    [SerializeField] private Image button1;
+    [SerializeField] private Image button2;
 
-    public TextMeshProUGUI button1Text;
-    public TextMeshProUGUI button2Text;
+    [SerializeField] private TextMeshProUGUI button1Text;
+    [SerializeField] private TextMeshProUGUI button2Text;
 
     [Header("Slides")]
-    public Sprite[] slides;
+    [SerializeField] private Sprite[] slides;
 
-    public GameObject slideImages;
+    [SerializeField] private GameObject slideImages;
 
     [SerializeField] private int pageNumber;
 
 
-    void Start() {
+    private void Start() {
         logoImage.color = new Color(0, 0, 0, 1);
         background.color = new Color(0, 0, 0, 1);
         button1.color = new Color(0, 0, 0, 1);
@@ -40,12 +40,12 @@ public class TitleManager : MonoBehaviour {
         StartCoroutine(FadeLogos());
     }
 
-    void Update() {
+    private void Update() {
         if (pageNumber >= 0 && pageNumber < slides.Length && slides[pageNumber] != null)
             slideImages.GetComponent<Image>().sprite = slides[pageNumber];
     }
 
-    IEnumerator FadeLogos() {
+    private IEnumerator FadeLogos() {
         yield return StartCoroutine(Fade(background, 0, 155, 2f));
         yield return new WaitForSeconds(1f);
         yield return StartCoroutine(Fade(logoImage, 0, 255, 2f));
@@ -59,7 +59,7 @@ public class TitleManager : MonoBehaviour {
         button2Text.enabled = true;
     }
 
-    IEnumerator Fade(Image image, float start, float end, float duration) {
+    private IEnumerator Fade(Image image, float start, float end, float duration) {
         float t = 0f;
 
         start /= 255f;
@@ -79,7 +79,7 @@ public class TitleManager : MonoBehaviour {
         StartCoroutine(StartGameCoroutine());
     }
 
-    IEnumerator StartGameCoroutine() {
+    private IEnumerator StartGameCoroutine() {
         button1.color = new Color(220, 220, 220, 1);
 
         yield return new WaitForSeconds(0.2f);
