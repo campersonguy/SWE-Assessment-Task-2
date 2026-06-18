@@ -40,7 +40,7 @@
 
 ## Week 7 (B Week) - Focus: Programming, Asset Creation/Identification and Journaling
 
-**Monday 1/6/26** - Today, I managed to get the dialogue system working, which will be used whenever the player decides to use the scanner. The dialogue box is essentially just a black box with text, so I’ll probably add a custom sprite for it sometime later.
+**Monday 1/6/26** - Today, I managed to get the dialogue system working, which will be used whenever the player decides to use the scanner. The dialogue box is essentially just a black box with text, so I’ll probably add a custom sprite for it sometime later. I also managed to make the enemies spawn in groups.
 
 **Wednesday 3/6/26** - I made some more optimisations to my code, mainly since I discovered the existence of being able to put headers in the attributes and SerializeField making private variables visible in the Inspector. These are both extremely useful and I’m annoyed I didn’t know about them until now. I also created a new sprite for the map so that it was much larger to allow for the player to move around more freely and make the map feel larger.
 
