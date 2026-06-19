@@ -21,11 +21,11 @@ public class Boss : Enemies {
     [SerializeField] private float chargeWindupTime = 0.4f;
     [SerializeField] private Color chargeGlowColor = Color.white;
 
-    [Header("Stomp Attack")]
-    [SerializeField] private float stompCooldown = 6f;
-    [SerializeField] private float stompRadius = 3f;
+    //[Header("Stomp Attack")]
+    //[SerializeField] private float stompCooldown = 6f;
+    //[SerializeField] private float stompRadius = 3f;
 
-    [SerializeField] private float stompTimer;
+    //[SerializeField] private float stompTimer;
 
     [Header("Projectile Attack")]
     [SerializeField] private GameObject projectilePrefab;
@@ -77,7 +77,7 @@ public class Boss : Enemies {
         }
 
         chargeTimer -= Time.fixedDeltaTime;
-        stompTimer -= Time.fixedDeltaTime;
+        //stompTimer -= Time.fixedDeltaTime;
         projectileTimer -= Time.fixedDeltaTime;
 
         if (chargeTimer <= 0f) {
@@ -85,10 +85,10 @@ public class Boss : Enemies {
             chargeTimer = chargeCooldown;
         }
 
-        if (stompTimer <= 0f) {
-            StompAttack();
-            stompTimer = stompCooldown;
-        }
+        //if (stompTimer <= 0f) {
+        //    StompAttack();
+        //    stompTimer = stompCooldown;
+        //}
 
         if (projectileTimer <= 0f) {
             ProjectileBurst();
@@ -133,16 +133,16 @@ public class Boss : Enemies {
         // Debug.Log("Boss performed CHARGE attack");
     }
 
-    private void StompAttack() {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, stompRadius);
+    //private void StompAttack() {
+    //    Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, stompRadius);
 
-        foreach (Collider2D hit in hits) {
-            if (hit.CompareTag("Player"))
-                AttackPlayer();
-        }
+    //    foreach (Collider2D hit in hits) {
+    //        if (hit.CompareTag("Player"))
+    //            AttackPlayer();
+    //    }
 
         //Debug.Log("Boss used stomp Attack");
-    }
+    //E}
 
     private void ProjectileBurst() {
         float angleStep = 360f / projectileCount;
@@ -164,7 +164,7 @@ public class Boss : Enemies {
 
     protected override void OnDrawGizmosSelected() {
         Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(transform.position, stompRadius); // stomp AoE
+        //Gizmos.DrawWireSphere(transform.position, stompRadius); // stomp AoE
     }
 }
 

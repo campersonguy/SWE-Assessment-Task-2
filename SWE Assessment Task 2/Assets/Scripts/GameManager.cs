@@ -108,6 +108,7 @@ public class GameManager : MonoBehaviour {
 
     [Header("State")]
     [SerializeField] private bool toggleMap;
+    [SerializeField] private bool checkingRooms;
 
     [SerializeField] private System.Random rng = new System.Random();
     [SerializeField] private Image blackImage;
@@ -146,7 +147,7 @@ public class GameManager : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.N))
             End(timer);
 
-        if (Input.GetKeyDown(KeyCode.Tab))
+        if (Input.GetKeyDown(KeyCode.Tab) && !checkingRooms)
             RoomCheck();
 
         SetUI();
@@ -402,6 +403,8 @@ public class GameManager : MonoBehaviour {
     }
 
     void RoomCheck() {
+        checkingRooms = true;
+
         List<int> enemyRooms = GetEnemyRooms();
         List<int> trapRooms = GetTrapRooms();
 
@@ -453,6 +456,7 @@ public class GameManager : MonoBehaviour {
         yield return new WaitForSeconds(3f);
 
         player.movementLock = false;
+        checkingRooms = false;
     }
 
     private IEnumerator TypeWrite(TextMeshProUGUI box, string line) {
