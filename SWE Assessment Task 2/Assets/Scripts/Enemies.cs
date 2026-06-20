@@ -32,7 +32,6 @@ public class Enemies : MonoBehaviour {
 
     [Header("Violence")]
     [SerializeField] private float aggroRange = 5f;       // distance to start chasing
-    [SerializeField] private float deaggroRange = 7f;     // distance to stop chasing
     public float attackRange = 0.5f;    // distance to attack
     public float attackCooldown = 1f;
 
@@ -85,11 +84,7 @@ public class Enemies : MonoBehaviour {
             float distToPlayer = Vector2.Distance(transform.position, player.position);
 
             // Aggro logic
-            if (!isAggro && distToPlayer <= aggroRange)
-                isAggro = true;
-
-            if (isAggro && distToPlayer >= deaggroRange)
-                isAggro = false;
+            isAggro = (!isAggro && distToPlayer <= aggroRange);
 
             if (isAggro) {
                 ChasePlayer();

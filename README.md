@@ -68,8 +68,10 @@
 
 **Thursday 18/6/26** - score, structure chart + class diagram
 
-**Friday 19/6/26** - Assessment Submission Due
+**Friday 19/6/26** - Alpha testing (zac), optimisations and stuff
 
 ## Week 10 (A Week)
 
-**Whole Week 22/6/26 - 26/6/26** - Presentations
+**Monday 22/6/26** - Assessment Submission Due
+
+**24/6/26 - 26/6/26** - Presentations
