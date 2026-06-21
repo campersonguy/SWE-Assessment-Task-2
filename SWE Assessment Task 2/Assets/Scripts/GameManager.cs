@@ -154,7 +154,7 @@ public class GameManager : MonoBehaviour {
             RoomCheck();
 
 
-        if (clearedGroups.Count == 1 && !gameEnd) {
+        if (clearedGroups.Count == 5 && !gameEnd) {
             gameEnd = true;
 
             StopAllCoroutines();
