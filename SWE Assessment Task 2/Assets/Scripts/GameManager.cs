@@ -65,20 +65,26 @@ public class GameManager : MonoBehaviour {
     [SerializeField] private PlayerController player;
     [SerializeField] private GameObject baseEnemy;
     [SerializeField] private GameObject baseBoss;
+
     [SerializeField] private GameObject[] obstacles;
     [SerializeField] private Sprite[] enemySprites;
 
     [Header("UI")]
     [SerializeField] private GameObject map;
     [SerializeField] private GameObject arrowUI;
+
     [SerializeField] private GameObject blackBackground;
     [SerializeField] private GameObject redOverlay;
+
     [SerializeField] private TextMeshPro[] arrowText;
     [SerializeField] private TextMeshProUGUI roomText;
     [SerializeField] private TextMeshProUGUI clearText;
     [SerializeField] private TextMeshProUGUI timerText;
+    [SerializeField] private TextMeshProUGUI endScreenText;
+
     [SerializeField] private Image dialogueBox;
     [SerializeField] private TextMeshProUGUI dialogueText;
+
     [SerializeField] private GameObject deathOverlay;
 
     [Header("World")]
@@ -99,6 +105,8 @@ public class GameManager : MonoBehaviour {
     [Header("State")]
     [SerializeField] private bool toggleMap;
     [SerializeField] private bool checkingRooms;
+
+    [SerializeField] private bool gameEnd;
 
     [Header("Internal")]
     [SerializeField] private System.Random rng = new System.Random();
@@ -140,19 +148,24 @@ public class GameManager : MonoBehaviour {
             toggleMap = !toggleMap;
 
         if (Input.GetKeyDown(KeyCode.N))
-            End(timer);
+            StartCoroutine(End(timer));
 
         if (Input.GetKeyDown(KeyCode.Tab) && !checkingRooms)
             RoomCheck();
+
+
+        if (clearedGroups.Count == 1 && !gameEnd) {
+            gameEnd = true;
+
+            StopAllCoroutines();
+            StartCoroutine(End(timer));
+        }
 
         SetUI();
     }
 
     private void FixedUpdate() {
         timer += Time.fixedDeltaTime;
-
-        if (clearedGroups.Count == 5)
-            End(timer);
     }
 
     // ---------------------------------------------------------
@@ -501,16 +514,50 @@ public class GameManager : MonoBehaviour {
     }
 
     // ---------------------------------------------------------
+    // END GAME
+    // ---------------------------------------------------------
+
+    private IEnumerator End(float timer) {
+        blackBackground.SetActive(true);
+        yield return Fade(0f, 1f, 1.5f);
+
+        float damageTaken = player.GetDamageTaken();
+        float score = (float)Math.Round((1200 - timer) * (15 - damageTaken), 0);
+
+
+        endScreenText.enabled = true;
+
+        endScreenText.text = $"Final Time: {TimeSpan.FromSeconds(Math.Floor(timer))}\n";
+
+        yield return new WaitForSeconds(1.5f);
+
+        endScreenText.text += $"Damage Taken: {player.GetDamageTaken()}\n";
+
+        yield return new WaitForSeconds(3f);
+
+        endScreenText.text += $"\n\nFinal Score: {score} points.\nRank: ";
+
+        endScreenText.text += score switch {
+            > 18000              => "T. For Tenna. How on earth did you get this high?",
+            > 16000 and <= 18000 => "S+. Fantastic job!",
+            > 14000 and <= 16000 => "S. Amazing job!",
+            > 11000 and <= 14000 => "A. Good job!",
+            > 8000 and <= 11000  => "B. Pretty good!",
+            > 5000 and <= 8000   => "C. You did alright!",
+            > 2000 and <= 5000   => "D. Maybe next time...",
+            > 0 and <= 2000      => "E. Lock in buddy.",
+            <= 0                 => "F. Your taking too long",
+            _                    => "bro?",
+        };
+    }
+
+    // ---------------------------------------------------------
     // OTHER
     // ---------------------------------------------------------
 
     public void Die() {
         toggleMap = false;
         deathOverlay.SetActive(true);
-    }
-
-    private void End(float timer) {
-        StartCoroutine(Fade(0f, 1f, 1.5f));
     }
 
     public void Reset() {

@@ -1,10 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using System.Collections;
-using System;
 using System.Collections.Generic;
-using TMPro;
 
 public class Enemies : MonoBehaviour {
 
@@ -16,7 +13,6 @@ public class Enemies : MonoBehaviour {
 
     [Header("Information")]
     public int groupID;
-
     public bool visible;
 
     [Header("Movement")]
@@ -27,21 +23,20 @@ public class Enemies : MonoBehaviour {
     [SerializeField] private PolygonCollider2D col;
     [SerializeField] protected SpriteRenderer sr;
 
-    [SerializeField] private Vector2 moveDirection;
-    [SerializeField] private float directionTimer;
+    private Vector2 moveDirection;
+    private float directionTimer;
 
-    [Header("Violence")]
-    [SerializeField] private float aggroRange = 5f;       // distance to start chasing
-    public float attackRange = 0.5f;    // distance to attack
+    [Header("Aggro + Attacking")]
+    [SerializeField] private float aggroRange = 5f;
+    public float attackRange = 0.5f;
     public float attackCooldown = 1f;
 
     public float damage = 1;
 
-    [SerializeField] private bool isAggro = false;
-    [SerializeField] private float attackTimer = 0f;
+    private bool isAggro = false;
+    private float attackTimer = 0f;
 
     [SerializeField] protected bool isCharging = false;
-
     [SerializeField] protected Transform player;
 
     [Header("Health")]
@@ -49,14 +44,20 @@ public class Enemies : MonoBehaviour {
     [SerializeField] protected float currentHealth;
 
     [SerializeField] private GameObject healthBar;
-    [SerializeField] private GameObject bar;
-    [SerializeField] private Image fill;
+    private GameObject bar;
+    private Image fill;
+
+    [SerializeField] private bool dead = false;
 
     [SerializeField] private Vector2 offset;
 
     [Header("Location")]
     public int currentRoom;
 
+
+    // ---------------------------------------------------------
+    // INITIALISATION
+    // ---------------------------------------------------------
 
     protected virtual void Awake() {
         rb = GetComponent<Rigidbody2D>();
@@ -66,95 +67,133 @@ public class Enemies : MonoBehaviour {
         bar = Instantiate(healthBar, transform);
         bar.transform.localPosition = offset;
 
-        fill = bar.transform.Find("Fill").gameObject.GetComponent<Image>();
+        fill = bar.transform.Find("Fill").GetComponent<Image>();
     }
 
     protected virtual void Start() {
         PickNewDirection();
-
         currentHealth = maxHealth;
     }
 
+    // ---------------------------------------------------------
+    // FIXED UPDATE (AI + MOVEMENT)
+    // ---------------------------------------------------------
+
     protected virtual void FixedUpdate() {
+
         visible = (gManager.currentRoom == currentRoom);
 
-        if (visible && currentHealth > 0) {
-            Visible(true);
-
-            float distToPlayer = Vector2.Distance(transform.position, player.position);
-
-            // Aggro logic
-            isAggro = (!isAggro && distToPlayer <= aggroRange);
-
-            if (isAggro) {
-                ChasePlayer();
-            } else {
-                Wander();
-            }
-
-            attackTimer += Time.fixedDeltaTime;
-            if (isAggro && distToPlayer <= attackRange && attackTimer >= attackCooldown) {
-                AttackPlayer();
-                attackTimer = 0f;
-            }
-        } else {
+        // Early exit if not visible or dead
+        if (!visible || currentHealth <= 0) {
             Visible(false);
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
+        Visible(true);
+
+        float distToPlayer = Vector2.Distance(transform.position, player.position);
+
+        // Smooth aggro logic with hysteresis
+        if (!isAggro && distToPlayer <= aggroRange)
+            isAggro = true;
+        else if (isAggro && distToPlayer >= aggroRange + 1f)
+            isAggro = false;
+
+        // Movement
+        if (isAggro)
+            ChasePlayerSmooth();
+        else
+            WanderSmooth();
+
+        // Attacking
+        attackTimer += Time.fixedDeltaTime;
+        if (isAggro && distToPlayer <= attackRange && attackTimer >= attackCooldown) {
+            AttackPlayer();
+            attackTimer = 0f;
         }
     }
 
-    private void Wander() {
+    // ---------------------------------------------------------
+    // MOVEMENT
+    // ---------------------------------------------------------
+
+    private void WanderSmooth() {
         directionTimer += Time.fixedDeltaTime;
         if (directionTimer >= changeDirectionTime)
             PickNewDirection();
 
-        if (!isCharging)
-            rb.linearVelocity = moveDirection * moveSpeed;
+        if (!isCharging) {
+            Vector2 targetVel = moveDirection * moveSpeed;
+            rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, targetVel, 0.1f);
+        }
     }
 
-    private void ChasePlayer() {
+    private void ChasePlayerSmooth() {
+        if (isCharging)
+            return;
+
         Vector2 dir = (player.position - transform.position).normalized;
-        
-        if (!isCharging)
-            rb.linearVelocity = dir * moveSpeed;
+        Vector2 targetVel = dir * moveSpeed;
+
+        rb.linearVelocity = Vector2.Lerp(rb.linearVelocity, targetVel, 0.15f);
     }
 
     private void PickNewDirection() {
-        moveDirection = UnityEngine.Random.insideUnitCircle.normalized;
+        moveDirection = Random.insideUnitCircle.normalized;
         directionTimer = 0f;
     }
+
+    // ---------------------------------------------------------
+    // COMBAT
+    // ---------------------------------------------------------
 
     protected void AttackPlayer() {
         playerController.TakeDamage(damage);
     }
+
+    // ---------------------------------------------------------
+    // VISIBILITY
+    // ---------------------------------------------------------
 
     void Visible(bool state) {
         sr.enabled = state;
         bar.SetActive(state);
     }
 
+    // ---------------------------------------------------------
+    // DAMAGE + DEATH
+    // ---------------------------------------------------------
+
     public IEnumerator TakeDamage(int amount) {
-        if (visible) {
-            currentHealth -= amount;
-            currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
+        if (!visible)
+            yield break;
 
-            fill.fillAmount = (float)currentHealth / maxHealth;
+        currentHealth -= amount;
+        currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 
-            Instantiate(damageEffect, transform.position, Quaternion.identity);
+        fill.fillAmount = currentHealth / maxHealth;
 
-            if (currentHealth <= 0) {
-                Die();
-                yield break;
-            }
+        Instantiate(damageEffect, transform.position, Quaternion.identity);
 
-            sr.color = new Color32(255, 137, 137, 255);
-            yield return new WaitForSeconds(0.15f);
-            sr.color = new Color32(137, 137, 137, 255);
+        if (currentHealth <= 0) {
+            Die();
+            yield break;
         }
+
+        sr.color = new Color32(255, 137, 137, 255);
+        yield return new WaitForSeconds(0.15f);
+        sr.color = new Color32(137, 137, 137, 255);
     }
 
     public void Die() {
+        if (dead)
+            return;
+
+        dead = true;
         GameManager.Instance.OnEnemyKilled(this);
         Visible(false);
+        rb.linearVelocity = Vector2.zero;
     }
 
     protected virtual void OnDrawGizmosSelected() {

@@ -34,7 +34,7 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private int attackDamage = 1;
     [SerializeField] private float attackCooldown = 0.4f;
 
-    private float attackTimer = 0f;
+    [SerializeField] private float attackTimer = 0f;
 
     [Header("Sword")]
     [SerializeField] private Transform sword;
@@ -53,10 +53,10 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private float dashDuration = 0.15f;
     [SerializeField] private float dashCooldown = 1f;
 
-    private bool isDashing = false;
-    private float dashTimer = 0f;
-    private float dashCooldownTimer = 0f;
-    private Vector2 dashDirection;
+    [SerializeField] private bool isDashing = false;
+    [SerializeField] private float dashTimer = 0f;
+    [SerializeField] private float dashCooldownTimer = 0f;
+    [SerializeField] private Vector2 dashDirection;
 
     [Header("State")]
     public bool movementLock = false;
@@ -86,7 +86,7 @@ public class PlayerController : MonoBehaviour {
 
         bool inCombatRoom = gameManager.GetEnemyRooms().Contains(gameManager.currentRoom);
 
-        if (inCombatRoom) {
+        if (inCombatRoom && currentHealth > 0) {
             sword.gameObject.SetActive(true);
 
             if (Input.GetMouseButtonDown(0) && attackTimer >= attackCooldown) {
@@ -268,9 +268,13 @@ public class PlayerController : MonoBehaviour {
     }
 
     // ---------------------------------------------------------
-    // DEBUG
+    // OTHER
     // ---------------------------------------------------------
 
+    public float GetDamageTaken() {
+        return maxHealth - currentHealth;
+    }
+    
     private void OnDrawGizmosSelected() {
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(transform.position, attackRange);

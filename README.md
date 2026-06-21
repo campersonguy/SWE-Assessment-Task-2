@@ -66,9 +66,11 @@
 
 **Wednesday 17/6/26** - *(Sick)*
 
-**Thursday 18/6/26** - score, structure chart + class diagram
+**Thursday 18/6/26** - I implemented the death screen to display credits and the player's final time. I also redid my structure chart, class diagram and data flow diagram to match the new combat-focused style that I had created for the game.
 
-**Friday 19/6/26** - Alpha testing (zac), optimisations and stuff
+**Friday 19/6/26** - In class, I had Zac alpha test my game since in the past he has tested my products for bugs. He ended up finding a few different issues which I managed to fix, mainly with the scanner animation and how you can still interact with things in the game after you die. He also discovered a balancing issue with the boss, in that the stomp attack felt unfair since there was no visual indication and the boss already had a contact attack to begin with. I resolved most of these issues by preventing interactions when you die, fixing spamming the scanner, and I ended up removing the stomp attack.
+
+**Weekend 20/6/26 - 21/6/26** - optimisations, presentation, polishing, finishing documentation
 
 ## Week 10 (A Week)
 

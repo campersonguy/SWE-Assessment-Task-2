@@ -1528,6 +1528,7 @@ MonoBehaviour:
   roomText: {fileID: 1637078119}
   clearText: {fileID: 753737760}
   timerText: {fileID: 1765690626}
+  endScreenText: {fileID: 446291007}
   dialogueBox: {fileID: 1579288964}
   dialogueText: {fileID: 1421847593}
   deathOverlay: {fileID: 710144160}
@@ -1541,6 +1542,7 @@ MonoBehaviour:
   trapPrefab: {fileID: 3129273373860068078, guid: 1df37c6ee72e84644bd475db06ac6394, type: 3}
   traps: []
   toggleMap: 0
+  checkingRooms: 0
   blackImage: {fileID: 0}
   anim: {fileID: 0}
   normalCave: {fileID: -8084402978206933498, guid: 0b06ead4be24b0545980a57a413b96ce, type: 3}
@@ -1562,7 +1564,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &446291006
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1589,7 +1591,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 446291005}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
   m_Name: 
@@ -1649,7 +1651,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 2
-  m_VerticalAlignment: 512
+  m_VerticalAlignment: 256
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -3668,7 +3670,6 @@ MonoBehaviour:
   moveDirection: {x: 0, y: 0}
   directionTimer: 0
   aggroRange: 5
-  deaggroRange: 7
   attackRange: 1.25
   attackCooldown: 1
   damage: 1
@@ -5991,7 +5992,6 @@ MonoBehaviour:
   moveDirection: {x: 0, y: 0}
   directionTimer: 0
   aggroRange: 5
-  deaggroRange: 7
   attackRange: 2
   attackCooldown: 1
   damage: 1
@@ -6009,19 +6009,12 @@ MonoBehaviour:
   baseDamage: 0
   chargeSpeed: 10
   chargeCooldown: 4
-  chargeTimer: 0
   chargeWindupTime: 0.4
   chargeGlowColor: {r: 1, g: 0.5, b: 0.5, a: 1}
-  stompCooldown: 6
-  stompRadius: 2
-  stompTimer: 0
   projectilePrefab: {fileID: 3896905220738634017, guid: 57b8698fe23473b46a080f9326d2f4d8, type: 3}
   projectileCooldown: 3
   projectileCount: 5
-  projectileTimer: 0
   spawnDelay: 5
-  spawnTimer: 0
-  isSpawning: 1
 --- !u!60 &1653636503
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -6714,21 +6707,14 @@ MonoBehaviour:
   attackAngle: 60
   attackDamage: 2
   attackCooldown: 0.5
-  attackTimer: 0
   sword: {fileID: 2037555099}
   radiusX: 4
   radiusY: 4
   jabDistance: 8
   jabSpeed: 40
-  jabAmount: 0
-  isJabbing: 0
   dashSpeed: 12
   dashDuration: 0.15
   dashCooldown: 0.5
-  isDashing: 0
-  dashTimer: 0
-  dashCooldownTimer: 0
-  dashDirection: {x: 0, y: 0}
   movementLock: 0
   inputLock: 0
   anim: {fileID: 1780963317}
@@ -7457,7 +7443,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2008352033
 RectTransform:
   m_ObjectHideFlags: 0
