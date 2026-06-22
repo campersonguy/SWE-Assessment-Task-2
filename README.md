@@ -74,6 +74,6 @@
 
 ## Week 10 (A Week)
 
-**Monday 22/6/26** - I finished up the final parts of my documentation that I hadn't finished yet and play
+**Monday 22/6/26** - I finished up the final parts of my documentation that I hadn't finished yet.
 
 **24/6/26 - 26/6/26** - Presentations
