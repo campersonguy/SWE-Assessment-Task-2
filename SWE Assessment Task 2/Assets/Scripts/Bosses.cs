@@ -6,9 +6,6 @@ using TMPro;
 
 public class Boss : Enemies {
 
-    [Header("Boss Stats")]
-    [SerializeField] private float baseDamage;
-
     [Header("Charge Attack")]
     [SerializeField] private float chargeSpeed = 10f;
     [SerializeField] private float chargeCooldown = 4f;
@@ -27,11 +24,6 @@ public class Boss : Enemies {
     [SerializeField] private float spawnDelay = 5f;
     private float spawnTimer = 0f;
     private bool isSpawning = true;
-
-    protected override void Awake() {
-        base.Awake();
-        baseDamage = damage;
-    }
 
     protected override void Start() {
         base.Start();
@@ -58,9 +50,6 @@ public class Boss : Enemies {
 
             return;
         }
-
-        // Scale damage based on cleared rooms
-        damage = Mathf.Floor(baseDamage + (4 - gManager.clearedGroups.Count));
 
         // Update attack timers
         chargeTimer -= Time.fixedDeltaTime;

@@ -70,10 +70,10 @@
 
 **Friday 19/6/26** - In class, I had Zac alpha test my game since in the past he has tested my products for bugs. He ended up finding a few different issues which I managed to fix, mainly with the scanner animation and how you can still interact with things in the game after you die. He also discovered a balancing issue with the boss, in that the stomp attack felt unfair since there was no visual indication and the boss already had a contact attack to begin with. I resolved most of these issues by preventing interactions when you die, fixing spamming the scanner, and I ended up removing the stomp attack.
 
-**Weekend 20/6/26 - 21/6/26** - optimisations, presentation, polishing, finishing documentation
+**Weekend 20/6/26 - 21/6/26** - I went over all of my code and optimised and made it more efficient to the best of my ability, mostly by fixing some flaws in syntax (noted in documentation) and removing unnecessary parts of code or unused variables, as well as grouping all of my methods together. I added a projectile sprite so it didn't have a blank circular sprite. I also started working on my presentation script. I had Brandon and Zac playtest my game, and I fixed some balancing issues they had with the game (noted in documentation), howveer I wasn't able to fix all of the flaws they pointed out.
 
 ## Week 10 (A Week)
 
-**Monday 22/6/26** - Assessment Submission Due
+**Monday 22/6/26** - I finished up the final parts of my documentation that I hadn't finished yet and play
 
 **24/6/26 - 26/6/26** - Presentations

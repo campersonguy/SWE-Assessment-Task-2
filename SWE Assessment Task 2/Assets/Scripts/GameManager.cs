@@ -35,7 +35,7 @@ public static class Data {
     public static Dictionary<int, List<float>> enemies = new Dictionary<int, List<float>> {
         {1, new List<float> { 30, 1,   1f,   1.1f, 2 } }, // Slime
         {2, new List<float> { 25, 1,   0.8f, 1.4f, 3 } }, // Bat
-        {3, new List<float> { 160,1,   1.5f, 2f,   3 } }, // The Wumpus
+        {3, new List<float> { 100,2,   1.5f, 2f,   3 } }, // The Wumpus
     };
 }
 
@@ -104,7 +104,7 @@ public class GameManager : MonoBehaviour {
 
     [Header("State")]
     [SerializeField] private bool toggleMap;
-    [SerializeField] private bool checkingRooms;
+    [SerializeField] private bool disableRoomCheck;
 
     [SerializeField] private bool gameEnd;
 
@@ -147,10 +147,10 @@ public class GameManager : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.M))
             toggleMap = !toggleMap;
 
-        if (Input.GetKeyDown(KeyCode.N))
-            StartCoroutine(End(timer));
+        //if (Input.GetKeyDown(KeyCode.N))
+        //    StartCoroutine(End(timer));
 
-        if (Input.GetKeyDown(KeyCode.Tab) && !checkingRooms)
+        if (Input.GetKeyDown(KeyCode.Tab) && !disableRoomCheck)
             RoomCheck();
 
 
@@ -336,7 +336,7 @@ public class GameManager : MonoBehaviour {
                 inTrapRoom = true;
 
                 yield return StartCoroutine(Dialogue(
-                    "*beep*\n\nSCANNING...   SCANNING...   SCANNING... \n" +
+                    "*beep*\n\nSCANNING...\n" +
                     "YOU ARE IN A TRAPPED ROOM! NOXIOUS GAS DETECTED! OH... AND ALSO, SPIKES!\n" +
                     "LEAVE AS SOON AS POSSIBLE! LEAVE AS SOON AS POSSIBLE!\n\n*beep*"));
 
@@ -389,7 +389,7 @@ public class GameManager : MonoBehaviour {
     }
 
     private void RoomCheck() {
-        checkingRooms = true;
+        disableRoomCheck = true;
 
         List<int> enemyRooms = GetEnemyRooms();
         List<int> trapRooms  = GetTrapRooms();
@@ -416,7 +416,7 @@ public class GameManager : MonoBehaviour {
         string adjacents = parts.Count == 0 ? "NOTHING" : string.Join(" AND ", parts);
 
         StartCoroutine(Dialogue(
-            "*beep*\n\nSCANNING...   SCANNING...   SCANNING...\n" +
+            "*beep*\n\nSCANNING...\n" +
             $"{adjacents} DETECTED IN ADJACENT ROOMS!\n\n*beep*"));
     }
 
@@ -436,7 +436,7 @@ public class GameManager : MonoBehaviour {
         yield return new WaitForSeconds(3f);
 
         player.movementLock = false;
-        checkingRooms = false;
+        disableRoomCheck = false;
     }
 
     private IEnumerator TypeWrite(TextMeshProUGUI box, string line) {
@@ -466,6 +466,7 @@ public class GameManager : MonoBehaviour {
     private IEnumerator FadeTransition(int arrowNum) {
         blackBackground.SetActive(true);
         player.inputLock = true;
+        disableRoomCheck = true;
 
         yield return StartCoroutine(Fade(0f, 1f, 1.5f));
 
@@ -482,6 +483,7 @@ public class GameManager : MonoBehaviour {
         yield return StartCoroutine(Fade(1f, 0f, 1.5f));
 
         blackBackground.SetActive(false);
+        disableRoomCheck = false;
     }
 
     private IEnumerator Fade(float start, float end, float duration) {
@@ -539,13 +541,13 @@ public class GameManager : MonoBehaviour {
 
         endScreenText.text += score switch {
             > 18000              => "T. For Tenna. How on earth did you get this high?",
-            > 16000 and <= 18000 => "S+. Fantastic job!",
-            > 14000 and <= 16000 => "S. Amazing job!",
-            > 11000 and <= 14000 => "A. Good job!",
-            > 8000 and <= 11000  => "B. Pretty good!",
-            > 5000 and <= 8000   => "C. You did alright!",
-            > 2000 and <= 5000   => "D. Maybe next time...",
-            > 0 and <= 2000      => "E. Lock in buddy.",
+            > 11000 and <= 18000 => "S+. Fantastic job!",
+            > 6000 and <= 11000  => "S. Amazing job!",
+            > 3000 and <= 6000   => "A. Good job!",
+            > 2000 and <= 3000   => "B. Pretty good!",
+            > 1000 and <= 2000   => "C. You did alright!",
+            > 500 and <= 1000    => "D. Maybe next time...",
+            > 0 and <= 500       => "E. Lock in buddy.",
             <= 0                 => "F. Your taking too long",
             _                    => "bro?",
         };

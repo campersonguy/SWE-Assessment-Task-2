@@ -59,7 +59,7 @@ public class Enemies : MonoBehaviour {
     // INITIALISATION
     // ---------------------------------------------------------
 
-    protected virtual void Awake() {
+    private void Awake() {
         rb = GetComponent<Rigidbody2D>();
         col = GetComponent<PolygonCollider2D>();
         sr = GetComponent<SpriteRenderer>();
